@@ -281,6 +281,25 @@ const getAdminLeaderboard = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/admin/rooms
+ * Returns all rooms (including problem statements) for admin management.
+ */
+const getAllRoomsAdmin = async (req, res, next) => {
+  try {
+    const { data: rooms, error } = await supabase
+      .from('rooms')
+      .select('*')
+      .order('room_order', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ success: true, rooms });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createTeam,
   getAllTeams,
@@ -290,4 +309,5 @@ module.exports = {
   createRoom,
   updateRoom,
   getAdminLeaderboard,
+  getAllRoomsAdmin,
 };

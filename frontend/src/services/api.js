@@ -6,12 +6,15 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const getToken = () => localStorage.getItem('cd_token');
+const getAdminSecret = () => localStorage.getItem('cd_admin_secret');
 
 const request = async (path, options = {}) => {
   const token = getToken();
+  const adminSecret = getAdminSecret();
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(adminSecret ? { 'x-admin-secret': adminSecret } : {}),
     ...options.headers,
   };
 
@@ -49,3 +52,43 @@ export const getMySubmissions = () => request('/api/submissions/mine');
 
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
 export const getLeaderboard = () => request('/api/leaderboard');
+
+// ─── Admin Endpoints ──────────────────────────────────────────────────────────
+export const adminGetRooms = () => request('/api/admin/rooms');
+
+export const adminCreateRoom = (roomData) =>
+  request('/api/admin/rooms', {
+    method: 'POST',
+    body: JSON.stringify(roomData),
+  });
+
+export const adminUpdateRoom = (id, updates) =>
+  request(`/api/admin/rooms/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+
+export const adminGetSubmissions = (status) => {
+  const query = status ? `?status=${status}` : '';
+  return request(`/api/admin/submissions${query}`);
+};
+
+export const adminAcceptSubmission = (id) =>
+  request(`/api/admin/submissions/${id}/accept`, {
+    method: 'PATCH',
+  });
+
+export const adminRejectSubmission = (id, reason) =>
+  request(`/api/admin/submissions/${id}/reject`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason }),
+  });
+
+export const adminGetTeams = () => request('/api/admin/teams');
+
+export const adminCreateTeam = (teamData) =>
+  request('/api/admin/teams', {
+    method: 'POST',
+    body: JSON.stringify(teamData),
+  });
+

@@ -24,15 +24,29 @@ const { registerSocketEvents } = require('./socket/events');
 // ─── App Setup ────────────────────────────────────────────────────────────────
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, {
-  cors: { origin: process.env.CLIENT_ORIGIN || '*' },
+const CORS_ORIGIN = process.env.CLIENT_ORIGIN || '*';
+
+// Allow any localhost port in dev (handles Vite auto-incrementing ports)
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || origin.startsWith('http://localhost') || origin === CORS_ORIGIN) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+};
+
+const io = new Server(server, {
+  cors: { origin: (origin, cb) => cb(null, true), credentials: true },
 });
 
 // Share io instance with controllers
 setIO(io);
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || '*' }));
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────────────────────

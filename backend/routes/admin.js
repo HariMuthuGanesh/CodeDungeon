@@ -10,6 +10,7 @@ const {
   createRoom,
   updateRoom,
   getAdminLeaderboard,
+  getAllRoomsAdmin,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -56,6 +57,9 @@ router.post(
   ],
   createRoom
 );
+
+// GET /api/admin/rooms
+router.get('/rooms', getAllRoomsAdmin);
 
 // PATCH /api/admin/rooms/:id
 router.patch('/rooms/:id', updateRoom);

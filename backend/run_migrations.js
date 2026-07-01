@@ -111,7 +111,12 @@ INSERT INTO rooms (room_order, title, topic, difficulty, points, problem_stateme
    'Write a C++ program using a recursive function to compute the factorial of N.\nInput: A single integer N (0 <= N <= 12).\nOutput: The factorial of N.'),
   (5, 'Boss Chamber',        'Comprehensive', 'boss',   100,
    'Implement a simple student record system. Read N student records (name and marks), then output them sorted by marks in descending order.\nInput: First line N, then N lines of "name marks".\nOutput: Sorted records one per line.')
-ON CONFLICT (room_order) DO NOTHING;
+ON CONFLICT (room_order) DO UPDATE SET
+  title = EXCLUDED.title,
+  topic = EXCLUDED.topic,
+  difficulty = EXCLUDED.difficulty,
+  points = EXCLUDED.points,
+  problem_statement = EXCLUDED.problem_statement;
 `;
 
 function runSQL(sql) {
