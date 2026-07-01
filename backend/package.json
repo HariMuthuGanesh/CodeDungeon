@@ -1,20 +1,27 @@
 {
-  "name": "backend",
+  "name": "code-dungeon-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Code Dungeon competition backend — Express + Supabase + Socket.IO",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Hari Muthu Ganesh",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
