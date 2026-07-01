@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { login as apiLogin } from '../services/api';
+import { connectSocket } from '../services/socket';
 
 export default function Login({ onLogin }) {
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]       = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -12,20 +14,22 @@ export default function Login({ onLogin }) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamName, password }),
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        onLogin(data.teamName);
-      } else {
-        setError(data.message || 'Login failed');
-      }
+      // Call backend — throws on non-OK status
+      const data = await apiLogin(teamName, password);
+
+      // Persist JWT so every subsequent API call has it
+      localStorage.setItem('cd_token',   data.token);
+      localStorage.setItem('cd_team_id', data.team.id);
+      localStorage.setItem('cd_team_name', data.team.teamName);
+
+      // Connect socket and join the team's private room
+      connectSocket(data.team.id);
+
+      // Lift full team object up to App
+      onLogin(data.team);
+
     } catch (err) {
-      setError('Cannot connect to server. Ensure backend is running.');
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +41,7 @@ export default function Login({ onLogin }) {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
       <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-fuchsia-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      
+
       {/* Glassmorphism Card */}
       <div className="relative z-10 w-full max-w-md bg-gray-900/40 backdrop-blur-xl border border-gray-800 rounded-2xl shadow-2xl p-8 transform transition-all duration-500 hover:scale-[1.01]">
         <div className="text-center mb-8">
@@ -55,12 +59,14 @@ export default function Login({ onLogin }) {
               {error}
             </div>
           )}
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Team Name</label>
             <input
               type="text"
+              id="teamName"
               required
+              autoComplete="username"
               className="w-full px-4 py-3 rounded-lg bg-gray-950/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               placeholder="Enter your team name"
               value={teamName}
@@ -72,7 +78,9 @@ export default function Login({ onLogin }) {
             <label className="block text-sm font-medium text-gray-300 mb-2">Access Code</label>
             <input
               type="password"
+              id="password"
               required
+              autoComplete="current-password"
               className="w-full px-4 py-3 rounded-lg bg-gray-950/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
               placeholder="Enter dungeon access code"
               value={password}
@@ -82,10 +90,11 @@ export default function Login({ onLogin }) {
 
           <button
             type="submit"
+            id="loginBtn"
             disabled={isLoading}
             className={`w-full py-3 px-4 rounded-lg text-white font-bold text-sm uppercase tracking-wider transition-all duration-300
-              ${isLoading 
-                ? 'bg-purple-600/50 cursor-not-allowed' 
+              ${isLoading
+                ? 'bg-purple-600/50 cursor-not-allowed'
                 : 'bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/50 hover:-translate-y-1'
               }
             `}
