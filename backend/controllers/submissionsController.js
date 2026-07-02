@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator');
 const supabase = require('../config/supabase');
 const { getIO } = require('../config/socket');
-const { evaluateCode } = require('../utils/judge');
 
 /**
  * POST /api/submissions
@@ -89,7 +88,30 @@ const createSubmission = async (req, res, next) => {
 
     // Fast-path: run auto-judge
     if (notes) {
-      const result = await evaluateCode(notes, room.room_order);
+      let result = { passed: false, notes: 'Judge Server connection failed.' };
+      try {
+        const judgeUrl = process.env.JUDGE_SERVER_URL || 'http://localhost:5001';
+        const response = await fetch(`${judgeUrl}/judge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: notes, roomOrder: room.room_order })
+        });
+        
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData.success) {
+            result = { passed: resData.passed, notes: resData.notes };
+          } else {
+            result.notes = resData.message || 'Judge Server encountered an error.';
+          }
+        } else {
+          result.notes = `Judge Server returned status ${response.status}.`;
+        }
+      } catch (fetchErr) {
+        console.error('Failed to communicate with Judge Server:', fetchErr);
+        result.notes = 'Judge Server is currently offline. Please notify the organizer for manual verification.';
+      }
+
       const newStatus = result.passed ? 'accepted' : 'rejected';
       
       const { data: updatedSub, error: updateError } = await supabase
