@@ -292,7 +292,16 @@ function App() {
       if (res.success) {
         const s = await getMySubmissions(); if (s.success) setSubmissions(s.submissions);
         const r = await getRooms(); if (r.success) setRooms(r.rooms);
-        setNotification({ type:'info', message:'🔥 Submission received! Awaiting judge...' });
+        
+        if (res.submission && res.submission.status === 'accepted') {
+          setNotification({ type:'success', message: `🏆 "${res.submission.rooms?.title || 'Chamber'}" cleared!` });
+          setChallengeOpen(false);
+        } else if (res.submission && res.submission.status === 'rejected') {
+          setNotification({ type:'error', message: '💀 Solution incorrect or tests failed.' });
+        } else {
+          setNotification({ type:'info', message: '🔥 Submission received! Awaiting manual review...' });
+          setChallengeOpen(false);
+        }
       }
     } catch (err) { setSubmitError(err.message||'Submission failed.'); }
     finally { setSubmitting(false); }
@@ -308,12 +317,12 @@ function App() {
   return (
     <div className="min-h-screen text-gray-200 relative bg-stone-texture">
       <MedievalBackground />
-      <div className="relative z-10 max-w-5xl mx-auto p-4 md:p-8">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto p-4 md:p-8">
         <Toast notification={notification} onDismiss={()=>setNotification(null)} />
         <Header team={team} rooms={rooms} socketConnected={socketConnected} onLogout={handleLogout} timeStatus={timeStatus} />
         {hasEscaped && <VictoryBanner team={team} rooms={rooms} />}
 
-        <div className="max-w-3xl mx-auto">
+        <div className="w-full">
           <DungeonHall rooms={rooms} activeRoomId={activeRoomId} onSelectRoom={handleSelectRoom} />
         </div>
       </div>

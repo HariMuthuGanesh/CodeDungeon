@@ -28,15 +28,13 @@ const getAllRooms = async (req, res, next) => {
 
     const clearedRoomIds = new Set(accepted.map((s) => s.room_id));
 
-    // Determine which rooms are accessible:
-    // Room 1 is always open; subsequent rooms open only after previous is cleared.
-    const enriched = rooms.map((room, idx) => {
+    // Determine which rooms are accessible: All unlocked as requested.
+    const enriched = rooms.map((room) => {
       const cleared = clearedRoomIds.has(room.id);
-      const previousCleared = idx === 0 || clearedRoomIds.has(rooms[idx - 1].id);
       return {
         ...room,
         cleared,
-        locked: !previousCleared,
+        locked: false,
       };
     });
 
@@ -67,28 +65,7 @@ const getRoomById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Room not found.' });
     }
 
-    // If it's not the first room, check the previous room is cleared
-    if (room.room_order > 1) {
-      const { data: prevRoom } = await supabase
-        .from('rooms')
-        .select('id')
-        .eq('room_order', room.room_order - 1)
-        .single();
-
-      if (prevRoom) {
-        const { data: prevCleared } = await supabase
-          .from('submissions')
-          .select('id')
-          .eq('team_id', teamId)
-          .eq('room_id', prevRoom.id)
-          .eq('status', 'accepted')
-          .single();
-
-        if (!prevCleared) {
-          return res.status(403).json({ success: false, message: 'This room is still locked. Clear the previous room first.' });
-        }
-      }
-    }
+    // Removed previous room cleared check to allow accessing any room
 
     // Check if team already cleared this room
     const { data: cleared } = await supabase
