@@ -10,14 +10,20 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 let socket = null;
 
 export const connectSocket = (teamId) => {
-  if (socket?.connected) return socket;
+  if (socket) {
+    if (socket.connected && teamId) {
+      socket.emit('join:team', { teamId });
+    }
+    return socket;
+  }
 
   socket = io(API_URL, { transports: ['websocket'] });
 
   socket.on('connect', () => {
     console.log('[Socket] Connected:', socket.id);
-    // Join the team's private room so the server can emit targeted events
-    socket.emit('join:team', { teamId });
+    if (teamId) {
+      socket.emit('join:team', { teamId });
+    }
   });
 
   socket.on('disconnect', () => {

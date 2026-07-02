@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 3000,        // Fixed port — won't clash with other apps on 5173/5174
-    strictPort: true,  // Fail loudly instead of silently picking another port
+    port: 3002,
+    strictPort: false,
   },
 })

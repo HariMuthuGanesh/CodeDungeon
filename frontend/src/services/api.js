@@ -29,6 +29,12 @@ const request = async (path, options = {}) => {
 };
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
+export const register = (teamName, password, members) =>
+  request('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ teamName, password, members }),
+  });
+
 export const login = (teamName, password) =>
   request('/api/auth/login', {
     method: 'POST',
