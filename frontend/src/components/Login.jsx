@@ -3,33 +3,22 @@ import { login as apiLogin, register as apiRegister, adminGetSubmissions } from 
 import { connectSocket } from '../services/socket';
 
 // ─── Theme tokens ────────────────────────────────────────────────────────────
-const T = {
-  primary:  '#CC1A00',   // Crimson red
-  gold:     '#F5A623',   // Golden amber
-  goldBright: '#FFD700', // Pure gold
-  redBright: '#FF3333',  // Bright red
-  bg:       '#0D0500',   // Deep dark red-black
-  border:   'rgba(204,26,0,0.3)',
-  glow:     'rgba(204,26,0,0.4)',
-  goldGlow: 'rgba(245,166,35,0.4)',
-};
+// Using CSS variables defined in index.css
 
-const inputCls = 'w-full px-4 py-3 rounded-xl text-white text-sm outline-none transition-all';
+const inputCls = 'w-full px-4 py-3 rounded text-gray-200 text-sm outline-none transition-all font-inter bg-stone-texture iron-border';
 const inputStyle = {
-  background: 'rgba(0,0,0,0.5)',
-  border: `1px solid rgba(204,26,0,0.25)`,
-  color: '#fff',
+  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.6)'
 };
 const inputFocusStyle = {
-  borderColor: T.gold,
-  boxShadow: `0 0 0 2px ${T.goldGlow}`,
+  borderColor: 'var(--color-gold)',
+  boxShadow: `inset 0 2px 4px rgba(0,0,0,0.6), 0 0 8px rgba(212,175,55,0.4)`,
 };
 
 function InputField({ label, type = 'text', value, onChange, placeholder, required }) {
   const [focused, setFocused] = useState(false);
   return (
     <div>
-      <label className="block text-xs font-semibold uppercase tracking-wider mb-2 font-mono" style={{ color: T.gold + 'aa' }}>
+      <label className="block text-xs font-semibold uppercase tracking-wider mb-2 font-cinzel text-gray-400">
         {label}
       </label>
       <input
@@ -108,41 +97,32 @@ export default function Login({ onLogin, onAdminLogin }) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: 'linear-gradient(160deg, #0D0500 0%, #1a0800 50%, #0D0500 100%)' }}
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-stone-texture"
     >
-      {/* Ambient glows */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[20%] left-[15%] w-96 h-96 rounded-full" style={{ background: 'radial-gradient(circle, rgba(204,26,0,0.12) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-[15%] right-[15%] w-80 h-80 rounded-full" style={{ background: 'radial-gradient(circle, rgba(245,166,35,0.10) 0%, transparent 70%)' }} />
-      </div>
-
       <div
-        className="relative z-10 w-full max-w-4xl rounded-3xl shadow-2xl p-6 md:p-8 backdrop-blur-2xl"
+        className="relative z-10 w-full max-w-4xl rounded p-6 md:p-8 bg-stone-texture iron-border"
         style={{
-          background: 'rgba(13,5,0,0.85)',
-          border: `1px solid rgba(204,26,0,0.25)`,
-          boxShadow: '0 0 60px rgba(204,26,0,0.1), 0 0 120px rgba(245,166,35,0.05)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.8), inset 0 0 100px rgba(0,0,0,0.9)',
         }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
 
           {/* Left: Branding */}
-          <div className="space-y-6 text-center md:text-left">
+          <div className="space-y-6 text-center md:text-left relative">
             <div>
               <h1
                 className="text-4xl md:text-5xl font-black tracking-tight"
                 style={{
-                  fontFamily: 'Cinzel, serif',
-                  background: `linear-gradient(135deg, ${T.redBright} 0%, ${T.gold} 60%, ${T.goldBright} 100%)`,
+                  fontFamily: 'var(--font-cinzel)',
+                  background: `linear-gradient(135deg, var(--color-gold) 0%, #FFF 60%, var(--color-bronze) 100%)`,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  filter: 'drop-shadow(0 0 20px rgba(245,166,35,0.3))',
+                  filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.8))',
                 }}
               >
                 CODE DUNGEON
               </h1>
-              <p className="text-xs font-semibold uppercase tracking-widest mt-2" style={{ color: T.gold + '80' }}>
+              <p className="text-xs font-semibold uppercase tracking-widest mt-2 text-gray-500 font-cinzel">
                 Escape Through Logic
               </p>
             </div>
@@ -154,12 +134,12 @@ export default function Login({ onLogin, onAdminLogin }) {
 
           {/* Right: Form */}
           <div
-            className="rounded-2xl p-6 md:p-7 backdrop-blur-xl"
-            style={{ background: 'rgba(0,0,0,0.4)', border: `1px solid rgba(204,26,0,0.2)` }}
+            className="rounded p-6 md:p-7 bg-stone-texture iron-border"
+            style={{ boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)' }}
           >
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Mode switcher tabs */}
-              <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(0,0,0,0.4)' }}>
+              <div className="flex gap-1 p-1 rounded iron-border bg-stone-texture">
                 {[
                   { key: 'login', label: '🔑 Login' },
                   { key: 'register', label: '✨ Sign Up' },
@@ -169,12 +149,13 @@ export default function Login({ onLogin, onAdminLogin }) {
                     key={key}
                     type="button"
                     onClick={() => resetForm(key)}
-                    className="flex-1 py-2 rounded-lg text-xs font-bold tracking-wide transition-all duration-200"
+                    className="flex-1 py-2 rounded text-xs font-bold tracking-wide transition-all duration-200 font-cinzel uppercase"
                     style={mode === key ? {
-                      background: key === 'admin' ? T.primary : `linear-gradient(135deg, ${T.primary}, ${T.gold})`,
-                      color: '#fff',
-                      boxShadow: `0 0 12px ${T.glow}`,
-                    } : { color: '#6b7280' }}
+                      background: 'var(--color-stone-primary)',
+                      color: 'var(--color-gold)',
+                      borderBottom: '2px solid var(--color-gold)',
+                      boxShadow: 'inset 0 -2px 10px rgba(212,175,55,0.1)'
+                    } : { color: '#6b7280', borderBottom: '2px solid transparent' }}
                   >
                     {label}
                   </button>
@@ -182,7 +163,7 @@ export default function Login({ onLogin, onAdminLogin }) {
               </div>
 
               {error && (
-                <div className="p-3 rounded-xl text-xs text-center font-medium" style={{ background: 'rgba(204,26,0,0.1)', border: `1px solid rgba(204,26,0,0.3)`, color: '#FF3333' }}>
+                <div className="p-3 rounded text-xs text-center font-medium font-inter iron-border bg-stone-texture" style={{ color: 'var(--color-error)' }}>
                   {error}
                 </div>
               )}
@@ -205,14 +186,8 @@ export default function Login({ onLogin, onAdminLogin }) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="relative w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-widest overflow-hidden group"
-                style={{
-                  background: isLoading ? 'rgba(204,26,0,0.3)' : `linear-gradient(135deg, ${T.primary} 0%, ${T.gold} 100%)`,
-                  color: '#fff',
-                  boxShadow: isLoading ? 'none' : `0 0 24px ${T.glow}`,
-                }}
+                className="stone-btn w-full py-3.5"
               >
-                <span className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -226,7 +201,7 @@ export default function Login({ onLogin, onAdminLogin }) {
               {mode === 'login' && (
                 <p className="text-center text-xs text-gray-600">
                   New team?{' '}
-                  <button type="button" onClick={() => resetForm('register')} className="font-bold" style={{ color: T.gold }}>
+                  <button type="button" onClick={() => resetForm('register')} className="font-bold text-gray-300 hover:text-white underline">
                     Register here
                   </button>
                 </p>

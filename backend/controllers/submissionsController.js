@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const supabase = require('../config/supabase');
 const { getIO } = require('../config/socket');
+const { evaluateCode } = require('../utils/judge');
 
 /**
  * POST /api/submissions
@@ -65,7 +66,7 @@ const createSubmission = async (req, res, next) => {
     }
 
     // Create the submission
-    const { data: submission, error: insertError } = await supabase
+    let { data: submission, error: insertError } = await supabase
       .from('submissions')
       .insert({
         team_id: teamId,
@@ -73,14 +74,62 @@ const createSubmission = async (req, res, next) => {
         status: 'pending',
         notes: notes || null,
       })
-      .select()
+      .select(`
+        id,
+        status,
+        notes,
+        submitted_at,
+        reviewed_at,
+        teams ( team_name ),
+        rooms ( id, title, difficulty, points )
+      `)
       .single();
 
     if (insertError) throw insertError;
 
+    // Fast-path: run auto-judge
+    if (notes) {
+      const result = await evaluateCode(notes, room.room_order);
+      const newStatus = result.passed ? 'accepted' : 'rejected';
+      
+      const { data: updatedSub, error: updateError } = await supabase
+        .from('submissions')
+        .update({
+          status: newStatus,
+          notes: notes + '\n\n// --- JUDGE RESULT ---\n' + result.notes,
+          reviewed_at: new Date().toISOString()
+        })
+        .eq('id', submission.id)
+        .select(`
+          id,
+          status,
+          notes,
+          submitted_at,
+          reviewed_at,
+          teams ( team_name ),
+          rooms ( id, title, difficulty, points )
+        `)
+        .single();
+        
+      if (!updateError && updatedSub) {
+        submission = updatedSub;
+        // Emit events
+        const io = getIO();
+        if (io) {
+          io.emit('submission:new', submission);
+          if (newStatus === 'accepted') {
+            io.to(teamId).emit('room:unlocked', { roomId, roomTitle: room.title, points: room.points });
+            io.emit('leaderboard:update');
+          } else {
+            io.to(teamId).emit('submission:rejected', { roomId, roomTitle: room.title, message: result.notes });
+          }
+        }
+      }
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Submission received. Awaiting review.',
+      message: submission.status === 'pending' ? 'Submission received. Awaiting review.' : (submission.status === 'accepted' ? 'Auto-judged: Accepted!' : 'Auto-judged: Rejected.'),
       submission,
     });
   } catch (err) {

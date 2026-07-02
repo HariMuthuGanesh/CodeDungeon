@@ -6,14 +6,15 @@ import {
 } from '../services/api';
 import { connectSocket } from '../services/socket';
 
-const R='#CC1A00'; const RB='#FF3333'; const G='#F5A623'; const GB='#FFD700';
-const panel = { background:'rgba(10,2,0,0.7)', border:`1px solid rgba(204,26,0,0.2)` };
-const card  = { background:'rgba(20,5,0,0.6)', border:`1px solid rgba(204,26,0,0.2)` };
-const inp   = 'w-full px-3 py-2.5 rounded-lg text-sm text-white placeholder-gray-600 outline-none focus:ring-2 transition-all';
-const inpSt = { background:'rgba(0,0,0,0.5)', border:'1px solid rgba(204,26,0,0.2)' };
-const btnPrimary = { background:`linear-gradient(135deg,${R},${G})`, color:'#fff', boxShadow:`0 0 16px rgba(204,26,0,0.4)` };
-const tabActive  = { color:G, borderBottom:`2px solid ${G}` };
+const panel = { background:'var(--color-stone-secondary)', border:`3px solid var(--color-iron)`, boxShadow: 'inset 0 0 10px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5)', borderRadius: '4px' };
+const card  = { background:'var(--color-stone-primary)', border:`1px solid var(--color-iron)`, borderRadius: '4px' };
+const inp   = 'w-full px-3 py-2.5 rounded text-sm text-gray-200 placeholder-gray-500 outline-none focus:ring-2 transition-all font-inter';
+const inpSt = { background:'var(--color-stone-secondary)', border:'1px solid var(--color-iron)' };
+const btnPrimary = { background:`linear-gradient(180deg, var(--color-stone-primary) 0%, var(--color-stone-secondary) 100%)`, border: '2px solid var(--color-gold)', color:'#F5F5F5', boxShadow:`0 4px 6px rgba(0,0,0,0.6)` };
+const tabActive  = { color:'var(--color-gold)', borderBottom:`2px solid var(--color-gold)` };
 const tabInactive= { color:'#6b7280' };
+
+const R='#CC1A00'; const RB='#FF3333'; const G='#D4AF37'; const GB='#FFD700';
 
 // ─── Per-team progress helper ─────────────────────────────────────────────────
 function TeamMonitorRow({ team, submissions, rooms }) {
@@ -43,9 +44,9 @@ function TeamMonitorRow({ team, submissions, rooms }) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 rounded-full mb-3" style={{background:'rgba(255,255,255,0.05)'}}>
+      <div className="h-1.5 rounded-full mb-3" style={{background:'var(--color-stone-secondary)', border:'1px solid var(--color-iron)'}}>
         <div className="h-1.5 rounded-full transition-all duration-500"
-          style={{width:`${pct}%`, background:`linear-gradient(90deg,${R},${G})`, boxShadow:`0 0 8px ${R}`}} />
+          style={{width:`${pct}%`, background:`linear-gradient(90deg, var(--color-bronze), var(--color-gold))`, boxShadow:`0 0 8px var(--color-gold)`}} />
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -205,13 +206,13 @@ export default function AdminPortal({ onLogout }) {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-6" style={{background:'linear-gradient(160deg,#0D0300 0%,#180600 50%,#0D0300 100%)'}}>
+    <div className="min-h-screen p-4 md:p-6 bg-stone-texture text-gray-200">
       {/* Toast */}
       {notification && (
-        <div className="fixed top-6 right-6 z-50 max-w-sm p-4 rounded-xl backdrop-blur-xl shadow-2xl animate-slide-in"
+        <div className="fixed top-6 right-6 z-50 max-w-sm p-4 rounded iron-border shadow-2xl animate-slide-in bg-stone-texture"
           style={notification.type==='success'
-            ? {background:'rgba(5,20,5,0.95)', border:'1px solid #16a34a', color:'#4ade80'}
-            : {background:'rgba(20,3,0,0.95)',  border:`1px solid ${R}`, color:RB}}>
+            ? {color:'var(--color-success)'}
+            : {color:'var(--color-error)'}}>
           <div className="flex items-center gap-3">
             <p className="text-sm font-medium flex-1">{notification.message}</p>
             <button onClick={()=>setNotification(null)} className="text-gray-500 hover:text-white font-bold">×</button>
@@ -220,20 +221,19 @@ export default function AdminPortal({ onLogout }) {
       )}
 
       {/* Header */}
-      <header className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 rounded-2xl p-5 backdrop-blur-xl"
+      <header className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 p-5"
         style={panel}>
         <div>
           <h1 className="text-3xl font-black tracking-tight" style={{
-            fontFamily:'Cinzel, serif',
-            background:`linear-gradient(135deg,${RB} 0%,${G} 60%,${GB} 100%)`,
+            fontFamily:'var(--font-cinzel)',
+            background:`linear-gradient(135deg, var(--color-gold) 0%, #FFF 60%, var(--color-bronze) 100%)`,
             WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-            filter:'drop-shadow(0 0 10px rgba(204,26,0,0.4))',
+            textShadow:'0 2px 4px rgba(0,0,0,0.8)'
           }}>DUNGEON ORGANIZER</h1>
-          <p className="text-xs uppercase tracking-widest mt-1 font-semibold" style={{color:`${G}60`}}>Admin Command Console</p>
+          <p className="text-xs uppercase tracking-widest mt-1 font-semibold text-gray-400 font-cinzel">Admin Command Console</p>
         </div>
         <button onClick={onLogout}
-          className="px-5 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
-          style={{border:`1px solid rgba(204,26,0,0.3)`, color:'#9ca3af', background:'rgba(204,26,0,0.05)'}}>
+          className="stone-btn px-5 py-2.5 text-xs">
           Exit Portal
         </button>
       </header>
@@ -254,8 +254,8 @@ export default function AdminPortal({ onLogout }) {
         {/* ── Submissions Queue ─────────────────────────────────────────────── */}
         {activeTab==='submissions' && (
           <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-            <div className="lg:col-span-4 rounded-2xl p-4 backdrop-blur-xl h-[calc(100vh-280px)] overflow-y-auto" style={panel}>
-              <h3 className="font-bold text-base mb-4" style={{color:G}}>Pending Review</h3>
+            <div className="lg:col-span-4 p-4 h-[calc(100vh-280px)] overflow-y-auto" style={panel}>
+              <h3 className="font-bold text-base mb-4 text-gray-200">Pending Review</h3>
               <div className="space-y-2">
                 {submissions.filter(s=>s.status==='pending').map(sub=>(
                   <button key={sub.id} onClick={()=>{setSelectedSub(sub);setRejectReason('');}}
@@ -301,7 +301,7 @@ export default function AdminPortal({ onLogout }) {
 
             <div className="lg:col-span-6 flex flex-col h-[calc(100vh-280px)]">
               {selectedSub ? (
-                <div className="rounded-2xl p-6 backdrop-blur-xl flex flex-col h-full overflow-y-auto" style={panel}>
+                <div className="p-6 flex flex-col h-full overflow-y-auto" style={panel}>
                   <div className="pb-4 mb-4 border-b flex justify-between items-start" style={{borderColor:'rgba(204,26,0,0.2)'}}>
                     <div>
                       <span className="text-xs font-mono uppercase tracking-widest" style={{color:G}}>Reviewing Submission</span>
