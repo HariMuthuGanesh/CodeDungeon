@@ -29,7 +29,7 @@ const CORS_ORIGIN = process.env.CLIENT_ORIGIN || '*';
 // Allow any localhost port in dev (handles Vite auto-incrementing ports)
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || origin.startsWith('http://localhost') || origin === CORS_ORIGIN) {
+    if (!origin || origin.startsWith('http://localhost') || CORS_ORIGIN === '*' || origin === CORS_ORIGIN) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
