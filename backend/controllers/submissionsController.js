@@ -86,82 +86,15 @@ const createSubmission = async (req, res, next) => {
 
     if (insertError) throw insertError;
 
-    // Fast-path: run auto-judge
-    if (notes) {
-      let result = { passed: false, notes: 'Judge Server connection failed.' };
-      try {
-        const judgeUrl = process.env.JUDGE_SERVER_URL || 'http://localhost:5001';
-        const response = await fetch(`${judgeUrl}/judge`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: notes, roomOrder: room.room_order })
-        });
-        
-        if (response.ok) {
-          const resData = await response.json();
-          if (resData.success) {
-            result = { passed: resData.passed, notes: resData.notes };
-          } else {
-            result.notes = resData.message || 'Judge Server encountered an error.';
-          }
-        } else {
-          result.notes = `Judge Server returned status ${response.status}.`;
-        }
-      } catch (fetchErr) {
-        console.error('Failed to communicate with Judge Server:', fetchErr);
-        result.notes = 'Judge Server is currently offline. Please notify the organizer for manual verification.';
-      }
-
-      const newStatus = result.passed ? 'accepted' : 'rejected';
-      
-      const { data: updatedSub, error: updateError } = await supabase
-        .from('submissions')
-        .update({
-          status: newStatus,
-          notes: notes + '\n\n// --- JUDGE RESULT ---\n' + result.notes,
-          reviewed_at: new Date().toISOString()
-        })
-        .eq('id', submission.id)
-        .select(`
-          id,
-          status,
-          notes,
-          submitted_at,
-          reviewed_at,
-          teams ( team_name ),
-          rooms ( id, title, difficulty, points )
-        `)
-        .single();
-        
-      if (!updateError && updatedSub) {
-        submission = updatedSub;
-        // Emit events
-        const io = getIO();
-        if (io) {
-          io.emit('submission:new', submission);
-          if (newStatus === 'accepted') {
-            io.to(teamId).emit('room:unlocked', { roomId, roomTitle: room.title, points: room.points });
-            const { data: lbData } = await supabase.from('leaderboard').select('*');
-            if (lbData) {
-              const ranked = lbData.map((entry, idx) => ({
-                rank: idx + 1,
-                teamName: entry.team_name,
-                roomsCleared: entry.rooms_cleared,
-                totalPoints: entry.total_points,
-                lastSubmissionAt: entry.last_submission_at,
-              }));
-              io.emit('leaderboard:update', ranked);
-            }
-          } else {
-            io.to(teamId).emit('submission:rejected', { roomId, roomTitle: room.title, message: result.notes });
-          }
-        }
-      }
+    // Notify organizers of new pending submission via socket
+    const io = getIO();
+    if (io) {
+      io.emit('submission:new', submission);
     }
 
     res.status(201).json({
       success: true,
-      message: submission.status === 'pending' ? 'Submission received. Awaiting review.' : (submission.status === 'accepted' ? 'Auto-judged: Accepted!' : 'Auto-judged: Rejected.'),
+      message: 'Submission received. Awaiting review.',
       submission,
     });
   } catch (err) {
