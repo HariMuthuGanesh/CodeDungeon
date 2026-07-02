@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.send('Code Dungeon Backend API is up and running! 🚀');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/api/health', (req, res) =>
