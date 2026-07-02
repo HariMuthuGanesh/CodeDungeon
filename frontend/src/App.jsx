@@ -233,13 +233,8 @@ function App() {
         <Header team={team} rooms={rooms} socketConnected={socketConnected} onLogout={handleLogout} />
         {hasEscaped && <VictoryBanner team={team} rooms={rooms} />}
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1">
-            <DungeonHall rooms={rooms} activeRoomId={activeRoomId} onSelectRoom={handleSelectRoom} />
-          </div>
-          <div className="w-full lg:w-80 shrink-0">
-            <Leaderboard leaderboard={leaderboard} currentTeamName={team.teamName} />
-          </div>
+        <div className="max-w-3xl mx-auto">
+          <DungeonHall rooms={rooms} activeRoomId={activeRoomId} onSelectRoom={handleSelectRoom} />
         </div>
       </div>
 
