@@ -50,6 +50,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.send('Code Dungeon Backend API is up and running! 🚀');
+});
+
 app.get('/api/health', (req, res) =>
   res.json({ success: true, status: 'Code Dungeon backend is running.' })
 );
