@@ -11,6 +11,7 @@ const {
   updateRoom,
   getAdminLeaderboard,
   getAllRoomsAdmin,
+  getAdminScoreboards,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -67,5 +68,8 @@ router.patch('/rooms/:id', updateRoom);
 // ─── Leaderboard ──────────────────────────────────────────────────────────────
 // GET /api/admin/leaderboard
 router.get('/leaderboard', getAdminLeaderboard);
+
+// GET /api/admin/scoreboards
+router.get('/scoreboards', getAdminScoreboards);
 
 module.exports = router;

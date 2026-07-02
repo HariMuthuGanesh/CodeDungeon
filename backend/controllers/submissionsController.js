@@ -14,13 +14,22 @@ const createSubmission = async (req, res, next) => {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
 
+    const timeGate = require('../utils/timeGate');
+    // 1. Time Gate Check
+    if (timeGate.isClosed()) {
+      return res.status(403).json({
+        success: false,
+        message: 'The dungeon gates are locked! Submissions are only accepted between 3:45 PM and 5:15 PM.'
+      });
+    }
+
     const { teamId, teamName } = req.team;
     const { roomId, notes } = req.body;
 
     // Verify the room exists
     const { data: room, error: roomError } = await supabase
       .from('rooms')
-      .select('id, room_order, title')
+      .select('id, room_order, title, type, correct_order, expected_pattern, points')
       .eq('id', roomId)
       .single();
 
@@ -64,14 +73,73 @@ const createSubmission = async (req, res, next) => {
       }
     }
 
+    // 2. Perform Automatic Evaluations (if applicable)
+    let finalStatus = 'pending';
+    let reviewNotes = null;
+    let reviewedAt = null;
+    let reviewDuration = null;
+
+    if (room.type === 'rearrangement') {
+      let isCorrect = false;
+      let submittedOrderArray = [];
+      try {
+        submittedOrderArray = JSON.parse(notes);
+      } catch (err) {
+        submittedOrderArray = [];
+      }
+      
+      const correctOrder = room.correct_order;
+      if (correctOrder && Array.isArray(correctOrder) && correctOrder.length === submittedOrderArray.length) {
+        isCorrect = correctOrder.every((val, index) => val === submittedOrderArray[index]);
+      }
+      
+      finalStatus = isCorrect ? 'accepted' : 'rejected';
+      reviewNotes = isCorrect ? 'Sequence match successful.' : 'Incorrect sequence.';
+      reviewedAt = new Date().toISOString();
+      reviewDuration = 0;
+    } else if (room.type === 'coding_auto') {
+      try {
+        const judgeUrl = process.env.JUDGE_SERVER_URL || 'http://localhost:5001';
+        const response = await fetch(`${judgeUrl}/judge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: notes, roomOrder: room.room_order })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Judge Server returned status ${response.status}`);
+        }
+        
+        const judgeResult = await response.json();
+        if (judgeResult.success) {
+          finalStatus = judgeResult.passed ? 'accepted' : 'rejected';
+          reviewNotes = judgeResult.notes;
+        } else {
+          finalStatus = 'rejected';
+          reviewNotes = judgeResult.message || 'Auto evaluation failed.';
+        }
+      } catch (err) {
+        console.error('Judge Server error:', err);
+        return res.status(502).json({
+          success: false,
+          message: 'Dungeon automated judge is offline. Please try again later or contact organizer.'
+        });
+      }
+      reviewedAt = new Date().toISOString();
+      reviewDuration = 0;
+    }
+
     // Create the submission
     let { data: submission, error: insertError } = await supabase
       .from('submissions')
       .insert({
         team_id: teamId,
         room_id: roomId,
-        status: 'pending',
+        status: finalStatus,
         notes: notes || null,
+        submitted_order: room.type === 'rearrangement' ? (notes ? JSON.parse(notes) : null) : null,
+        reviewed_at: reviewedAt,
+        review_duration: reviewDuration
       })
       .select(`
         id,
@@ -79,22 +147,66 @@ const createSubmission = async (req, res, next) => {
         notes,
         submitted_at,
         reviewed_at,
-        teams ( team_name ),
-        rooms ( id, title, difficulty, points )
+        review_duration,
+        teams ( id, team_name ),
+        rooms ( id, title, room_order, difficulty, points )
       `)
       .single();
 
     if (insertError) throw insertError;
 
-    // Notify organizers of new pending submission via socket
+    // 3. Socket Communications & Side Effects
     const io = getIO();
-    if (io) {
-      io.emit('submission:new', submission);
+
+    if (finalStatus === 'accepted') {
+      // Respect grace period time gate: only unlock if NOT in grace period
+      if (timeGate.isGracePeriod()) {
+        console.log(`[TimeGate] Grace period active. Accepted submission for team ${teamName} but room progression is locked.`);
+      } else {
+        if (io) {
+          io.to(`team:${teamId}`).emit('room:unlocked', {
+            roomId: submission.rooms.id,
+            roomTitle: submission.rooms.title,
+            points: submission.rooms.points,
+          });
+        }
+      }
+
+      // Broadcast updated leaderboard
+      if (io) {
+        const { data: leaderboard } = await supabase.from('leaderboard').select('*');
+        if (leaderboard) {
+          io.emit('leaderboard:update', leaderboard.map((entry, idx) => ({
+            rank: idx + 1,
+            teamName: entry.team_name,
+            roomsCleared: entry.rooms_cleared,
+            totalPoints: entry.total_points,
+            lastSubmissionAt: entry.last_submission_at,
+          })));
+        }
+      }
+    } else if (finalStatus === 'rejected') {
+      if (io) {
+        io.to(`team:${teamId}`).emit('submission:rejected', {
+          roomId: submission.rooms.id,
+          roomTitle: submission.rooms.title,
+          message: reviewNotes || 'Your submission is incorrect. Try again.',
+        });
+      }
+    } else {
+      // Pending review - notify organizers via socket
+      if (io) {
+        io.emit('submission:new', submission);
+      }
     }
 
     res.status(201).json({
       success: true,
-      message: 'Submission received. Awaiting review.',
+      message: finalStatus === 'accepted' 
+        ? 'Solution accepted! Room cleared.' 
+        : finalStatus === 'rejected' 
+        ? 'Solution rejected. Check compiler output/logs.' 
+        : 'Submission received. Awaiting manual review.',
       submission,
     });
   } catch (err) {

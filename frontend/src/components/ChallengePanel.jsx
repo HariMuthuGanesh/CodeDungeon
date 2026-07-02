@@ -66,6 +66,58 @@ export default function ChallengePanel({
   const [themeReady, setThemeReady] = useState(false);
   const editorRef = useRef(null);
 
+  // --- Rearrangement State & Refs ---
+  const [rearrangeItems, setRearrangeItems] = useState([]);
+  const dragItem = useRef();
+  const dragOverItem = useRef();
+
+  useEffect(() => {
+    if (room && room.type === 'rearrangement') {
+      try {
+        const parsed = JSON.parse(code);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRearrangeItems(parsed);
+          return;
+        }
+      } catch (e) {}
+      setRearrangeItems(room.shuffled_order || []);
+      onCodeChange(JSON.stringify(room.shuffled_order || []));
+    }
+  }, [room, code]);
+
+  const updateRearrangeItems = (newItems) => {
+    setRearrangeItems(newItems);
+    onCodeChange(JSON.stringify(newItems));
+  };
+
+  const handleDragStart = (e, position) => {
+    dragItem.current = position;
+  };
+
+  const handleDragEnter = (e, position) => {
+    dragOverItem.current = position;
+  };
+
+  const handleDrop = () => {
+    const copyListItems = [...rearrangeItems];
+    const dragItemContent = copyListItems[dragItem.current];
+    copyListItems.splice(dragItem.current, 1);
+    copyListItems.splice(dragOverItem.current, 0, dragItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    updateRearrangeItems(copyListItems);
+  };
+
+  const moveItem = (index, direction) => {
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= rearrangeItems.length) return;
+    const copyListItems = [...rearrangeItems];
+    const temp = copyListItems[index];
+    copyListItems[index] = copyListItems[nextIndex];
+    copyListItems[nextIndex] = temp;
+    updateRearrangeItems(copyListItems);
+  };
+
   const diffConf = getDifficultyConfig(room?.difficulty);
   const isCleared = room?.cleared;
   const isPending = submission?.status === 'pending';
@@ -217,47 +269,129 @@ export default function ChallengePanel({
           </div>
         </div>
 
-        {/* RIGHT PANE: Monaco Code Editor */}
+        {/* RIGHT PANE: Workspace depending on challenge type */}
         <div className="w-full lg:w-[60%] xl:w-[65%] flex flex-col bg-[#0d1117]">
           
-          {/* Editor Header */}
+          {/* Workspace Header */}
           <div className="flex-none px-4 py-2 bg-stone-texture iron-border border-b flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-2">
-              <span className="text-sm">⚙️</span>
-              <span className="font-mono text-xs text-gray-400">solution.cpp</span>
+              <span className="text-sm">🛠️</span>
+              <span className="font-mono text-xs text-gray-400">
+                {room.type === 'rearrangement' 
+                  ? 'sigil_reorder.cpp' 
+                  : room.type === 'pattern_manual'
+                  ? 'pattern_prediction.txt'
+                  : 'solution.cpp'}
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-gray-500 bg-black/40 px-2 py-1 rounded">C++ (g++)</span>
+            <span className="text-[10px] font-mono text-gray-500 bg-black/40 px-2 py-1 rounded">
+              {room.type === 'rearrangement'
+                ? 'Drag & Drop Sequence'
+                : room.type === 'pattern_manual'
+                ? 'Output Text Prediction'
+                : 'C++ (g++)'}
+            </span>
           </div>
 
-          {/* Editor Container (Flexible Height) */}
-          <div className="flex-1 min-h-0 relative">
-            <Editor
-              height="100%"
-              language="cpp"
-              value={code}
-              onChange={(val) => onCodeChange(val || '')}
-              onMount={handleEditorMount}
-              theme={themeReady ? MEDIEVAL_THEME_NAME : 'vs-dark'}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 15,
-                fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-                autoClosingBrackets: 'always',
-                autoClosingQuotes: 'always',
-                autoIndent: 'full',
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                padding: { top: 16, bottom: 16 },
-                cursorBlinking: 'phase',
-              }}
-              loading={
-                <div className="h-full bg-[#0d1117] flex items-center justify-center">
-                  <div className="text-sm animate-pulse font-mono text-gray-500">
-                    Summoning editor magic...
+          {/* Workspace Container */}
+          <div className="flex-1 min-h-0 overflow-y-auto relative p-4">
+            {room.type === 'rearrangement' ? (
+              <div className="flex flex-col gap-2 max-w-2xl mx-auto py-4">
+                <p className="text-xs text-gray-400 font-mono mb-2 uppercase tracking-wider">
+                  💡 Drag & drop the strips of code to reorder, or use the arrow buttons:
+                </p>
+                {rearrangeItems.map((item, index) => (
+                  <div
+                    key={index}
+                    draggable={!isCleared && !isPending}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragEnter={(e) => handleDragEnter(e, index)}
+                    onDragEnd={handleDrop}
+                    onDragOver={(e) => e.preventDefault()}
+                    className={`flex items-center justify-between p-3 rounded-lg border font-mono text-sm select-none transition-all ${
+                      isCleared || isPending
+                        ? 'border-gray-800 bg-gray-950/40 text-gray-500 cursor-not-allowed'
+                        : 'border-amber-900/40 bg-stone-900/60 hover:bg-stone-800/80 hover:border-amber-500/50 text-amber-200/90 cursor-grab active:cursor-grabbing'
+                    }`}
+                    style={{
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
+                    }}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <span className="text-xs text-gray-600 font-bold shrink-0 w-4">
+                        {index + 1}
+                      </span>
+                      <span className="whitespace-pre overflow-x-auto text-left">
+                        {item}
+                      </span>
+                    </div>
+                    
+                    {!isCleared && !isPending && (
+                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                        <button
+                          onClick={() => moveItem(index, -1)}
+                          disabled={index === 0}
+                          className="px-2 py-1 bg-black/40 hover:bg-black/80 text-xs rounded border border-gray-800 disabled:opacity-30 disabled:hover:bg-black/40"
+                          title="Move Up"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() => moveItem(index, 1)}
+                          disabled={index === rearrangeItems.length - 1}
+                          className="px-2 py-1 bg-black/40 hover:bg-black/80 text-xs rounded border border-gray-800 disabled:opacity-30 disabled:hover:bg-black/40"
+                          title="Move Down"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              }
-            />
+                ))}
+              </div>
+            ) : room.type === 'pattern_manual' ? (
+              <div className="max-w-2xl mx-auto py-6 flex flex-col gap-4">
+                <label className="block text-xs font-mono uppercase tracking-wider text-amber-500/80">
+                  Enter output prediction:
+                </label>
+                <textarea
+                  value={code}
+                  onChange={(e) => onCodeChange(e.target.value)}
+                  disabled={isCleared || isPending}
+                  placeholder="Type your predicted output pattern here..."
+                  className="w-full h-64 p-4 rounded-xl font-mono text-sm leading-relaxed outline-none transition-all bg-black/60 text-emerald-400 border border-amber-900/30 focus:border-amber-500/50 shadow-inner disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+            ) : (
+              <Editor
+                height="100%"
+                language="cpp"
+                value={code}
+                onChange={(val) => onCodeChange(val || '')}
+                onMount={handleEditorMount}
+                theme={themeReady ? MEDIEVAL_THEME_NAME : 'vs-dark'}
+                options={{
+                  readOnly: isCleared || isPending,
+                  minimap: { enabled: false },
+                  fontSize: 15,
+                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+                  autoClosingBrackets: 'always',
+                  autoClosingQuotes: 'always',
+                  autoIndent: 'full',
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  padding: { top: 16, bottom: 16 },
+                  cursorBlinking: 'phase',
+                }}
+                loading={
+                  <div className="h-full bg-[#0d1117] flex items-center justify-center">
+                    <div className="text-sm animate-pulse font-mono text-gray-500">
+                      Summoning editor magic...
+                    </div>
+                  </div>
+                }
+              />
+            )}
           </div>
 
           {/* Submit Footer */}

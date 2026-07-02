@@ -5,7 +5,7 @@ import DungeonHall from './components/DungeonHall';
 import ChallengePanel from './components/ChallengePanel';
 import Leaderboard from './components/Leaderboard';
 import { disconnectSocket, connectSocket } from './services/socket';
-import { getRooms, getRoom, submitRoom, getMySubmissions, getLeaderboard } from './services/api';
+import { getRooms, getRoom, submitRoom, getMySubmissions, getLeaderboard, getTimeStatus } from './services/api';
 import { getStarterCode } from './questions';
 
 const getSavedSession   = () => { const t=localStorage.getItem('cd_token'),i=localStorage.getItem('cd_team_id'),n=localStorage.getItem('cd_team_name'); return t&&i&&n?{id:i,teamName:n}:null; };
@@ -87,23 +87,90 @@ function MedievalBackground() {
   );
 }
 
+// ─── Time Gate Status ──────────────────────────────────────────────────────────
+function TimeGateStatus({ timeStatus }) {
+  if (!timeStatus || !timeStatus.enabled) return null;
+
+  const [secondsLeft, setSecondsLeft] = useState(timeStatus.remainingSeconds || 0);
+
+  useEffect(() => {
+    setSecondsLeft(timeStatus.remainingSeconds || 0);
+  }, [timeStatus]);
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const timer = setInterval(() => {
+      setSecondsLeft((s) => Math.max(0, s - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [secondsLeft]);
+
+  const formatTime = (sec) => {
+    const hrs = Math.floor(sec / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    const secs = sec % 60;
+    return `${hrs > 0 ? hrs + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStatusConfig = () => {
+    switch (timeStatus.status) {
+      case 'open':
+        return {
+          bg: 'bg-emerald-950/40 border-emerald-500/30 text-emerald-400',
+          badge: 'bg-emerald-500 text-black',
+          label: 'Gates Open',
+          suffix: `closes in ${formatTime(secondsLeft)}`
+        };
+      case 'grace':
+        return {
+          bg: 'bg-amber-950/40 border-amber-500/30 text-amber-400',
+          badge: 'bg-amber-500 text-black animate-pulse',
+          label: 'Grace Period',
+          suffix: `progression locked (${formatTime(secondsLeft)} left)`
+        };
+      case 'closed':
+      default:
+        return {
+          bg: 'bg-rose-950/40 border-rose-500/30 text-rose-400',
+          badge: 'bg-rose-600 text-white',
+          label: 'Gates Locked',
+          suffix: secondsLeft > 0 ? `opens in ${formatTime(secondsLeft)}` : 'Dungeon Closed'
+        };
+    }
+  };
+
+  const config = getStatusConfig();
+
+  return (
+    <div className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg border text-xs font-mono select-none ${config.bg}`}>
+      <span className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${config.badge}`}>
+        {config.label}
+      </span>
+      <span>{config.suffix}</span>
+    </div>
+  );
+}
+
 // ─── Header ───────────────────────────────────────────────────────────────────
-function Header({ team, rooms, socketConnected, onLogout }) {
+function Header({ team, rooms, socketConnected, onLogout, timeStatus }) {
   return (
     <header className="w-full flex flex-col md:flex-row justify-between items-center gap-4 mb-8 p-5 bg-stone-texture iron-border">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight"
-          style={{ fontFamily:'var(--font-cinzel)', background:`linear-gradient(135deg,var(--color-gold) 0%,#FFF 100%)`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', textShadow:'0 2px 4px rgba(0,0,0,0.8)' }}>
-          CODE DUNGEON
-        </h1>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs uppercase tracking-widest font-mono" style={{color:'var(--color-bronze)'}}>Escape Through Logic</span>
-          <span className="text-gray-600">·</span>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <span className={`w-2 h-2 rounded-full ${socketConnected?'bg-emerald-600':'bg-red-800'}`}/>
-            {socketConnected ? 'Connected' : 'Offline'}
+      <div className="flex flex-wrap items-center gap-6">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight"
+            style={{ fontFamily:'var(--font-cinzel)', background:`linear-gradient(135deg,var(--color-gold) 0%,#FFF 100%)`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', textShadow:'0 2px 4px rgba(0,0,0,0.8)' }}>
+            CODE DUNGEON
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs uppercase tracking-widest font-mono" style={{color:'var(--color-bronze)'}}>Escape Through Logic</span>
+            <span className="text-gray-600">·</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <span className={`w-2 h-2 rounded-full ${socketConnected?'bg-emerald-600':'bg-red-800'}`}/>
+              {socketConnected ? 'Connected' : 'Offline'}
+            </div>
           </div>
         </div>
+        <TimeGateStatus timeStatus={timeStatus} />
       </div>
       <div className="flex items-center gap-5">
         <div className="text-right">
@@ -134,6 +201,19 @@ function App() {
   const [socketConnected, setSocketConnected]   = useState(false);
   const [challengeOpen, setChallengeOpen]       = useState(false);
   const [leaderboard, setLeaderboard]           = useState([]);
+  const [timeStatus, setTimeStatus]             = useState(null);
+
+  useEffect(() => {
+    const fetchTime = async () => {
+      try {
+        const res = await getTimeStatus();
+        if (res.success) setTimeStatus(res);
+      } catch (e) { console.error(e); }
+    };
+    fetchTime();
+    const iv = setInterval(fetchTime, 15000);
+    return () => clearInterval(iv);
+  }, []);
 
   const handleLogin       = (t) => setTeam(t);
   const handleAdminLogin  = (s) => setAdminSecret(s);
@@ -230,7 +310,7 @@ function App() {
       <MedievalBackground />
       <div className="relative z-10 max-w-5xl mx-auto p-4 md:p-8">
         <Toast notification={notification} onDismiss={()=>setNotification(null)} />
-        <Header team={team} rooms={rooms} socketConnected={socketConnected} onLogout={handleLogout} />
+        <Header team={team} rooms={rooms} socketConnected={socketConnected} onLogout={handleLogout} timeStatus={timeStatus} />
         {hasEscaped && <VictoryBanner team={team} rooms={rooms} />}
 
         <div className="max-w-3xl mx-auto">

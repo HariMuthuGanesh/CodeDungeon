@@ -3,6 +3,7 @@ import {
   adminGetRooms, adminCreateRoom, adminUpdateRoom,
   adminGetSubmissions, adminAcceptSubmission, adminRejectSubmission,
   adminGetTeams, adminCreateTeam, getLeaderboard,
+  adminGetScoreboards,
 } from '../services/api';
 import { connectSocket } from '../services/socket';
 
@@ -79,6 +80,8 @@ export default function AdminPortal({ onLogout }) {
   const [teams,       setTeams]       = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [scoreboardA, setScoreboardA] = useState([]);
+  const [scoreboardB, setScoreboardB] = useState([]);
   const [selectedSub, setSelectedSub] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -97,8 +100,8 @@ export default function AdminPortal({ onLogout }) {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [rRes, sRes, tRes, lRes] = await Promise.all([
-        adminGetRooms(), adminGetSubmissions(), adminGetTeams(), getLeaderboard(),
+      const [rRes, sRes, tRes, lRes, sbRes] = await Promise.all([
+        adminGetRooms(), adminGetSubmissions(), adminGetTeams(), getLeaderboard(), adminGetScoreboards(),
       ]);
       if (rRes.success) setRooms(rRes.rooms);
       if (sRes.success) {
@@ -110,6 +113,10 @@ export default function AdminPortal({ onLogout }) {
       }
       if (tRes.success) setTeams(tRes.teams);
       if (lRes.success) setLeaderboard(lRes.leaderboard);
+      if (sbRes.success) {
+        setScoreboardA(sbRes.scoreboardA || []);
+        setScoreboardB(sbRes.scoreboardB || []);
+      }
     } catch(e){ console.error(e); }
   }, [selectedSub]);
 
@@ -117,7 +124,7 @@ export default function AdminPortal({ onLogout }) {
     fetchAll();
     const socket = connectSocket('admin');
     if (socket) {
-      socket.on('leaderboard:update', setLeaderboard);
+      socket.on('leaderboard:update', () => { fetchAll(); });
       socket.on('submission:new', fetchAll);
     }
     const iv = setInterval(fetchAll, 15000);
@@ -290,10 +297,15 @@ export default function AdminPortal({ onLogout }) {
                       <span className="font-semibold text-gray-300 block">{sub.teams?.team_name}</span>
                       <span className="text-gray-600">{sub.rooms?.title}</span>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sub.status==='accepted'?'text-emerald-400':'text-rose-400'}`}
-                      style={{border:`1px solid ${sub.status==='accepted'?'rgba(16,185,129,0.3)':'rgba(204,26,0,0.3)'}`, background:sub.status==='accepted'?'rgba(16,185,129,0.08)':'rgba(204,26,0,0.08)'}}>
-                      {sub.status}
-                    </span>
+                    <div className="text-right flex flex-col items-end gap-1">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sub.status==='accepted'?'text-emerald-400':'text-rose-400'}`}
+                        style={{border:`1px solid ${sub.status==='accepted'?'rgba(16,185,129,0.3)':'rgba(204,26,0,0.3)'}`, background:sub.status==='accepted'?'rgba(16,185,129,0.08)':'rgba(204,26,0,0.08)'}}>
+                        {sub.status}
+                      </span>
+                      {sub.review_duration !== null && sub.review_duration !== undefined && (
+                        <span className="text-[9px] text-gray-500 font-mono">reviewed in {sub.review_duration}s</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -384,7 +396,10 @@ export default function AdminPortal({ onLogout }) {
                       style={{border:`1px solid currentColor`, opacity:0.7}}>
                       {sub.status}
                     </span>
-                    <span className="text-gray-600 font-mono">{new Date(sub.submitted_at).toLocaleTimeString()}</span>
+                    <span className="text-gray-600 font-mono">
+                      {sub.review_duration !== null && sub.review_duration !== undefined ? `⏱️ ${sub.review_duration}s · ` : ''}
+                      {new Date(sub.submitted_at).toLocaleTimeString()}
+                    </span>
                   </div>
                 ))}
                 {submissions.length===0 && <p className="text-gray-600 text-center font-mono text-sm py-6">No activity yet.</p>}
@@ -509,42 +524,94 @@ export default function AdminPortal({ onLogout }) {
           </div>
         )}
 
-        {/* ── Leaderboard ───────────────────────────────────────────────────── */}
+        {/* ── Leaderboard (Scoreboards A & B) ───────────────────────────────── */}
         {activeTab==='leaderboard' && (
-          <div className="max-w-4xl mx-auto rounded-2xl p-5 backdrop-blur-xl" style={panel}>
-            <h3 className="text-lg font-bold mb-6 flex items-center gap-2" style={{color:G}}>
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{background:RB}}/>
-              Live Standings
-            </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-xs uppercase font-mono border-b" style={{borderColor:'rgba(204,26,0,0.2)', color:`${G}60`}}>
-                  <th className="py-3 px-3">Rank</th>
-                  <th className="py-3 px-3">Team</th>
-                  <th className="py-3 px-3 text-center">Rooms</th>
-                  <th className="py-3 px-3 text-right">Points</th>
-                  <th className="py-3 px-3 text-right">Last Active</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map(row=>(
-                  <tr key={row.teamName} className="text-sm border-b transition-colors" style={{borderColor:'rgba(204,26,0,0.08)'}}>
-                    <td className="py-3.5 px-3 font-mono">
-                      {row.rank===1?'🥇':row.rank===2?'🥈':row.rank===3?'🥉':`#${row.rank}`}
-                    </td>
-                    <td className="py-3.5 px-3 font-bold text-white">{row.teamName}</td>
-                    <td className="py-3.5 px-3 text-center font-mono text-gray-400">{row.roomsCleared}</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold" style={{color:GB}}>{row.totalPoints}</td>
-                    <td className="py-3.5 px-3 text-right font-mono text-gray-600 text-xs">
-                      {row.lastSubmissionAt ? new Date(row.lastSubmissionAt).toLocaleTimeString() : '—'}
-                    </td>
-                  </tr>
-                ))}
-                {leaderboard.length===0 && (
-                  <tr><td colSpan="5" className="py-10 text-center text-gray-600 font-mono text-xs">No active teams.</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div className="flex flex-col xl:flex-row gap-6 max-w-7xl mx-auto items-start">
+            {/* Scoreboard A */}
+            <div className="flex-1 w-full rounded-2xl p-5 backdrop-blur-xl" style={panel}>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{color:G}}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{background:RB}}/>
+                Scoreboard A (Sections 1 + 2)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="text-xs uppercase font-mono border-b" style={{borderColor:'rgba(204,26,0,0.2)', color:`${G}60`}}>
+                      <th className="py-3 px-3">Rank</th>
+                      <th className="py-3 px-3">Team</th>
+                      <th className="py-3 px-3 text-center">Score</th>
+                      <th className="py-3 px-3 text-center">Reviewed</th>
+                      <th className="py-3 px-3 text-center">Avg Time</th>
+                      <th className="py-3 px-3 text-right">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scoreboardA.map((row, idx) => (
+                      <tr key={row.teamName} className="text-sm border-b transition-colors animate-fade-in" style={{borderColor:'rgba(204,26,0,0.08)'}}>
+                        <td className="py-3 px-3 font-mono">
+                          {idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`#${idx+1}`}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-white">{row.teamName}</td>
+                        <td className="py-3 px-3 text-center font-mono font-bold" style={{color:GB}}>{row.score} XP</td>
+                        <td className="py-3 px-3 text-center font-mono text-gray-400">{row.submissionsReviewed}</td>
+                        <td className="py-3 px-3 text-center font-mono text-gray-400">
+                          {row.averageReviewTime ? `${row.averageReviewTime}s` : '0s'}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-gray-500 text-xs">
+                          {row.progress}
+                        </td>
+                      </tr>
+                    ))}
+                    {scoreboardA.length===0 && (
+                      <tr><td colSpan="6" className="py-10 text-center text-gray-600 font-mono text-xs">No active teams in Scoreboard A.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Scoreboard B */}
+            <div className="flex-1 w-full rounded-2xl p-5 backdrop-blur-xl" style={panel}>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{color:G}}>
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{background:RB}}/>
+                Scoreboard B (Section 3)
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="text-xs uppercase font-mono border-b" style={{borderColor:'rgba(204,26,0,0.2)', color:`${G}60`}}>
+                      <th className="py-3 px-3">Rank</th>
+                      <th className="py-3 px-3">Team</th>
+                      <th className="py-3 px-3 text-center">Score</th>
+                      <th className="py-3 px-3 text-center">Reviewed</th>
+                      <th className="py-3 px-3 text-center">Avg Time</th>
+                      <th className="py-3 px-3 text-right">Progress</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scoreboardB.map((row, idx) => (
+                      <tr key={row.teamName} className="text-sm border-b transition-colors animate-fade-in" style={{borderColor:'rgba(204,26,0,0.08)'}}>
+                        <td className="py-3 px-3 font-mono">
+                          {idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`#${idx+1}`}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-white">{row.teamName}</td>
+                        <td className="py-3 px-3 text-center font-mono font-bold text-emerald-400">{row.score} XP</td>
+                        <td className="py-3 px-3 text-center font-mono text-gray-400">{row.submissionsReviewed}</td>
+                        <td className="py-3 px-3 text-center font-mono text-gray-400">
+                          {row.averageReviewTime ? `${row.averageReviewTime}s` : '0s'}
+                        </td>
+                        <td className="py-3 px-3 text-right font-mono text-gray-500 text-xs">
+                          {row.progress}
+                        </td>
+                      </tr>
+                    ))}
+                    {scoreboardB.length===0 && (
+                      <tr><td colSpan="6" className="py-10 text-center text-gray-600 font-mono text-xs">No active teams in Scoreboard B.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </main>

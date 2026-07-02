@@ -43,6 +43,8 @@ export const login = (teamName, password) =>
 
 export const getMe = () => request('/api/auth/me');
 
+export const getTimeStatus = () => request('/api/auth/time-status');
+
 // ─── Rooms ────────────────────────────────────────────────────────────────────
 export const getRooms = () => request('/api/rooms');
 export const getRoom = (id) => request(`/api/rooms/${id}`);
@@ -97,4 +99,6 @@ export const adminCreateTeam = (teamData) =>
     method: 'POST',
     body: JSON.stringify(teamData),
   });
+
+export const adminGetScoreboards = () => request('/api/admin/scoreboards');
 
