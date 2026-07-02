@@ -12,7 +12,7 @@ const getAllRooms = async (req, res, next) => {
     // Fetch all rooms ordered by room_order
     const { data: rooms, error: roomsError } = await supabase
       .from('rooms')
-      .select('id, room_order, title, topic, difficulty, points')
+      .select('id, room_order, title, topic, difficulty, points, section, type')
       .order('room_order', { ascending: true });
 
     if (roomsError) throw roomsError;
@@ -59,7 +59,7 @@ const getRoomById = async (req, res, next) => {
     // Get the room
     const { data: room, error: roomError } = await supabase
       .from('rooms')
-      .select('id, room_order, title, topic, difficulty, points, problem_statement')
+      .select('id, room_order, title, topic, difficulty, points, problem_statement, section, type, shuffled_order')
       .eq('id', id)
       .single();
 

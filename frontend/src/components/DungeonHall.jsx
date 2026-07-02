@@ -173,24 +173,6 @@ function DungeonDoor({ room, isActive, onClick, isCurrent }) {
 
 // ─── DungeonHall ──────────────────────────────────────────────────────────────
 export default function DungeonHall({ rooms, activeRoomId, onSelectRoom }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const containerRef = useRef(null);
-
-  useEffect(() => {
-    if (!rooms.length) return;
-    const idx = rooms.findIndex(r => r.id === activeRoomId);
-    if (idx !== -1) setCurrentIndex(idx);
-  }, [activeRoomId, rooms]);
-
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key==='ArrowRight' || e.key==='ArrowDown') setCurrentIndex(p => Math.min(p+1, rooms.length-1));
-      if (e.key==='ArrowLeft'  || e.key==='ArrowUp')   setCurrentIndex(p => Math.max(p-1, 0));
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [rooms.length]);
-
   if (!rooms.length) {
     return (
       <div className="flex items-center justify-center min-h-64 rounded-2xl" style={{background:'rgba(13,3,0,0.6)', border:'1px solid rgba(204,26,0,0.15)'}}>
@@ -202,24 +184,68 @@ export default function DungeonHall({ rooms, activeRoomId, onSelectRoom }) {
     );
   }
 
-  const VISIBLE = 3;
-  const start = Math.max(0, Math.min(currentIndex - 1, rooms.length - VISIBLE));
-  const visible = rooms.slice(start, start + VISIBLE);
+  // Partition rooms by section
+  const section1Rooms = rooms.filter(r => r.section === 1);
+  const section2Rooms = rooms.filter(r => r.section === 2);
+  const section3Rooms = rooms.filter(r => r.section === 3);
 
   const clearedCount = rooms.filter(r => r.cleared).length;
   const progress     = Math.round((clearedCount / rooms.length) * 100);
 
+  const renderSection = (title, subtitle, sectionRooms, sectionNum) => (
+    <div className="mb-10 animate-fade-in">
+      {/* Section Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4 px-1">
+        <span className="text-sm font-mono text-amber-500/80 font-bold">
+          [ SECTION {sectionNum === 1 ? 'I' : sectionNum === 2 ? 'II' : 'III'} ]
+        </span>
+        <h3 className="text-lg font-cinzel font-black tracking-wider text-white uppercase">
+          {title}
+        </h3>
+        <span className="hidden sm:inline text-gray-700 font-mono">·</span>
+        <span className="text-xs text-gray-400 font-inter italic">{subtitle}</span>
+      </div>
+
+      {/* Corridor block */}
+      <div
+        className="relative rounded-2xl p-6 md:p-8 overflow-hidden bg-stone-texture"
+        style={{
+          boxShadow: 'inset 0 0 40px rgba(0,0,0,0.85)',
+          background: 'var(--color-stone-secondary)',
+          border: '3px solid var(--color-iron)'
+        }}
+      >
+        <Vines count={4} />
+
+        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {sectionRooms.map((room) => (
+            <DungeonDoor
+              key={room.id}
+              room={room}
+              isActive={room.id === activeRoomId}
+              isCurrent={room.id === activeRoomId}
+              onClick={() => onSelectRoom(room.id)}
+            />
+          ))}
+          {sectionRooms.length === 0 && (
+            <p className="text-center py-6 text-gray-600 font-mono text-xs col-span-3">This wing of the dungeon is locked.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div>
-      {/* ─── Hall header ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mb-6 px-1">
+    <div className="flex flex-col gap-2">
+      {/* ─── Global Progress Header ──────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-8 px-1">
         <div>
-          <h2 className="text-xl font-black uppercase tracking-wider"
+          <h2 className="text-2xl font-black uppercase tracking-wider"
             style={{fontFamily:'var(--font-cinzel)', background:`linear-gradient(135deg,var(--color-gold),#FFF)`, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', textShadow:'0 2px 4px rgba(0,0,0,0.8)'}}>
             The Dungeon Corridor
           </h2>
           <p className="text-xs text-gray-400 font-cinzel mt-1">
-            {clearedCount} of {rooms.length} chambers escaped
+            {clearedCount} of {rooms.length} chambers cleared
           </p>
         </div>
         <div className="text-right">
@@ -234,66 +260,31 @@ export default function DungeonHall({ rooms, activeRoomId, onSelectRoom }) {
         </div>
       </div>
 
-      {/* ─── Corridor environment ─────────────────────────────────────────── */}
-      <div
-        ref={containerRef}
-        className="relative rounded p-6 md:p-8 overflow-hidden bg-stone-texture iron-border"
-        style={{
-          boxShadow:'inset 0 0 60px rgba(0,0,0,0.8)',
-          minHeight:'380px',
-        }}
-      >
-        {/* Floor glow */}
-        <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none"
-          style={{background:'linear-gradient(0deg,rgba(0,0,0,0.5) 0%,transparent 100%)'}}/>
+      {/* ─── Three Dungeon Sections ────────────────────────────────────────── */}
+      {renderSection(
+        "Chambers of Shuffled Sigils", 
+        "Rearrange code blocks to rebuild ancient spells & compile solutions", 
+        section1Rooms, 
+        1
+      )}
+      
+      {renderSection(
+        "The Ancient Library", 
+        "Predict sequences and find patterns left behind by the arch-mages", 
+        section2Rooms, 
+        2
+      )}
 
-        {/* ── Door grid ──────────────────────────────────────────────────── */}
-        <div className="relative grid grid-cols-3 gap-4 md:gap-6">
-          {visible.map((room) => (
-            <DungeonDoor
-              key={room.id}
-              room={room}
-              isActive={room.id === activeRoomId}
-              isCurrent={room.id === activeRoomId}
-              onClick={() => onSelectRoom(room.id)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Navigation ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between mt-4 px-1">
-        <button
-          onClick={() => setCurrentIndex(p => Math.max(0, p-1))}
-          disabled={currentIndex===0}
-          className="stone-btn px-4 py-2 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-          ← Prev
-        </button>
-
-        {/* Dot indicator */}
-        <div className="flex items-center gap-2">
-          {rooms.map((r, i) => (
-            <button key={r.id} onClick={() => setCurrentIndex(i)}
-              className="transition-all duration-300 iron-border"
-              style={{
-                width: i===currentIndex ? '20px' : '8px',
-                height:'8px', borderRadius:'4px',
-                background: r.cleared ? 'var(--color-success)' : i===currentIndex ? 'var(--color-gold)' : 'var(--color-stone-secondary)',
-              }}/>
-          ))}
-        </div>
-
-        <button
-          onClick={() => setCurrentIndex(p => Math.min(rooms.length-1, p+1))}
-          disabled={currentIndex>=rooms.length-1}
-          className="stone-btn px-4 py-2 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-          Next →
-        </button>
-      </div>
-
-      {/* ─── Keyboard hint ────────────────────────────────────────────────── */}
-      <p className="text-center text-[10px] text-gray-700 font-mono mt-3 uppercase tracking-widest">
-        ← → Arrow keys to navigate · Click a door to enter
+      {renderSection(
+        "The Final Gate", 
+        "Implement complex logic to defeat the Boss and escape the dungeon", 
+        section3Rooms, 
+        3
+      )}
+      
+      {/* Keyboard hint */}
+      <p className="text-center text-[10px] text-gray-700 font-mono mt-4 uppercase tracking-widest">
+        Click a door to enter the chamber
       </p>
     </div>
   );
