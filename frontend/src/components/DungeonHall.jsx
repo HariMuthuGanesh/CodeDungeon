@@ -87,10 +87,10 @@ function DungeonDoor({ room, isActive, onClick, isCurrent }) {
       }}
     >
       {/* Main door frame */}
-      <div className="relative rounded-t-full overflow-hidden bg-stone-texture iron-border"
+      <div className="relative rounded-t-[40%] overflow-hidden bg-stone-texture iron-border"
         style={{
           width:'100%',
-          minHeight:'220px',
+          minHeight:'140px',
           border: `3px solid ${isActive ? 'var(--color-gold)' : room.cleared ? 'var(--color-success)' : room.locked ? 'var(--color-stone-secondary)' : diff.border}`,
           boxShadow: room.locked ? 'none'
             : hovered || isActive ? `0 0 30px ${diff.glow}, 0 0 60px ${diff.glow}40, inset 0 0 20px ${diff.glow}10`
@@ -108,7 +108,7 @@ function DungeonDoor({ room, isActive, onClick, isCurrent }) {
         {isActive && <RuneParticles />}
 
         {/* Door wood panels */}
-        <div className="absolute inset-4 top-8 flex flex-col gap-2 z-10">
+        <div className="absolute inset-3 top-4 flex flex-col gap-2 z-10">
           {[0,1,2].map(i => (
             <div key={i} className="flex-1 rounded" style={{
               background: room.cleared
@@ -123,7 +123,7 @@ function DungeonDoor({ room, isActive, onClick, isCurrent }) {
 
         {/* Center icon / skull */}
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-          <div className={`text-4xl mb-2`} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+          <div className={`text-3xl mb-1`} style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
             {room.cleared ? '✅' : room.locked ? '🔒' : diff.skull}
           </div>
           <div className="text-[10px] font-cinzel uppercase tracking-widest font-bold"
@@ -149,8 +149,8 @@ function DungeonDoor({ room, isActive, onClick, isCurrent }) {
       }}/>
 
       {/* Door label below */}
-      <div className="mt-3 text-center px-2">
-        <span className="block font-bold text-sm text-gray-200 truncate font-inter" title={room.title}>
+      <div className="mt-2 text-center px-1">
+        <span className="block font-bold text-xs text-gray-200 truncate font-inter" title={room.title}>
           {room.title}
         </span>
         <span className="block text-[10px] text-gray-500 mt-0.5 font-cinzel">{room.topic}</span>
@@ -242,7 +242,7 @@ function SectionDoor({ title, subtitle, sectionNum, rooms, activeRoomId, onSelec
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 flex-grow overflow-y-auto custom-scrollbar pr-2 pb-8 content-start">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6 flex-grow overflow-hidden pr-2 pb-4 content-start">
             {rooms.map(room => (
               <DungeonDoor key={room.id} room={room} isActive={room.id === activeRoomId} isCurrent={room.id === activeRoomId} onClick={(e) => { e.stopPropagation(); onSelectRoom(room.id); }} />
             ))}
