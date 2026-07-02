@@ -157,7 +157,7 @@ function App() {
         }
       }
       if (sRes.success) setSubmissions(sRes.submissions);
-      if (lRes.success) setLeaderboard(lRes.leaderboard);
+      if (lRes.success) setLeaderboard(lRes.leaderboard || []);
     } catch (e) { console.error(e); }
   }, [activeRoomId]);
 
@@ -168,7 +168,7 @@ function App() {
       setSocketConnected(socket.connected);
       socket.on('connect',    () => setSocketConnected(true));
       socket.on('disconnect', () => setSocketConnected(false));
-      socket.on('leaderboard:update', setLeaderboard);
+      socket.on('leaderboard:update', (data) => setLeaderboard(data || []));
       socket.on('room:unlocked', p => {
         setNotification({ type:'success', message:`🏆 "${p.roomTitle}" cleared! +${p.points} pts!` });
         refreshData();

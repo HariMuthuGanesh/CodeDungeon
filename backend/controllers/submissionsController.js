@@ -119,7 +119,17 @@ const createSubmission = async (req, res, next) => {
           io.emit('submission:new', submission);
           if (newStatus === 'accepted') {
             io.to(teamId).emit('room:unlocked', { roomId, roomTitle: room.title, points: room.points });
-            io.emit('leaderboard:update');
+            const { data: lbData } = await supabase.from('leaderboard').select('*');
+            if (lbData) {
+              const ranked = lbData.map((entry, idx) => ({
+                rank: idx + 1,
+                teamName: entry.team_name,
+                roomsCleared: entry.rooms_cleared,
+                totalPoints: entry.total_points,
+                lastSubmissionAt: entry.last_submission_at,
+              }));
+              io.emit('leaderboard:update', ranked);
+            }
           } else {
             io.to(teamId).emit('submission:rejected', { roomId, roomTitle: room.title, message: result.notes });
           }

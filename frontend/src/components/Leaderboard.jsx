@@ -3,13 +3,14 @@ import { useState, useEffect } from 'react';
 // ─── Theme ───────────────────────────────────────────────────────────────────
 const rankIcon = (r) => r===1?'🥇':r===2?'🥈':r===3?'🥉':`#${r}`;
 
-export default function Leaderboard({ leaderboard, currentTeamName }) {
+export default function Leaderboard({ leaderboard = [], currentTeamName }) {
   const [prevOrder, setPrevOrder] = useState([]);
   const [flashMap, setFlashMap]   = useState({});
 
   useEffect(() => {
-    if (!prevOrder.length) { setPrevOrder(leaderboard.map(r=>r.teamName)); return; }
-    const newOrd = leaderboard.map(r=>r.teamName);
+    const list = leaderboard || [];
+    if (!prevOrder.length) { setPrevOrder(list.map(r=>r.teamName)); return; }
+    const newOrd = list.map(r=>r.teamName);
     const changed = {};
     newOrd.forEach((n,i) => {
       const p = prevOrder.indexOf(n);
@@ -35,14 +36,14 @@ export default function Leaderboard({ leaderboard, currentTeamName }) {
         <h3 className="text-sm font-bold uppercase tracking-widest font-cinzel text-gray-200">Live Standings</h3>
       </div>
 
-      {leaderboard.length===0 ? (
+      {(leaderboard || []).length===0 ? (
         <div className="py-10 text-center">
           <span className="text-3xl block mb-2 opacity-50">🛡️</span>
           <p className="text-gray-500 font-cinzel text-xs uppercase tracking-widest">No teams yet.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          {leaderboard.map(row => {
+          {(leaderboard || []).map(row => {
             const isMe = row.teamName === currentTeamName;
             const flash = flashMap[row.teamName];
             return (
