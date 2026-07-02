@@ -8,7 +8,7 @@ function defineDungeonTheme(monaco) {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      { token: '', foreground: 'D4AF37', background: '1B1F24' },
+      { token: '', foreground: 'D4AF37', background: '0d1117' },
       { token: 'keyword', foreground: '8B6B3F', fontStyle: 'bold' },
       { token: 'number', foreground: 'D4AF37' },
       { token: 'string', foreground: 'E6C28F' },
@@ -20,15 +20,15 @@ function defineDungeonTheme(monaco) {
       { token: 'function', foreground: 'D4AF37' },
     ],
     colors: {
-      'editor.background': '#1B1F24',
+      'editor.background': '#0d1117',
       'editor.foreground': '#D4AF37',
-      'editor.lineHighlightBackground': '#2C2F33',
+      'editor.lineHighlightBackground': '#161b22',
       'editor.selectionBackground': '#8B6B3F44',
       'editor.inactiveSelectionBackground': '#8B6B3F22',
       'editorCursor.foreground': '#8B6B3F',
       'editorLineNumber.foreground': '#5B616A',
       'editorLineNumber.activeForeground': '#D4AF37',
-      'editorGutter.background': '#1B1F24',
+      'editorGutter.background': '#0d1117',
       'editorBracketMatch.background': '#8B6B3F33',
       'editorBracketMatch.border': '#8B6B3F',
       'scrollbarSlider.background': '#5B616A33',
@@ -83,10 +83,10 @@ export default function ChallengePanel({
       autoIndent: 'full',
       formatOnType: true,
       minimap: { enabled: false },
-      fontSize: 14,
+      fontSize: 15,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
       fontLigatures: true,
-      lineHeight: 22,
+      lineHeight: 24,
       cursorBlinking: 'phase',
       cursorStyle: 'line-thin',
       scrollBeyondLastLine: false,
@@ -99,22 +99,12 @@ export default function ChallengePanel({
   if (!room) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/90 backdrop-blur-md"
-        onClick={onClose}
-      />
-
-      {/* Panel */}
-      <div
-        className="relative w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded border flex flex-col bg-stone-texture iron-border"
-        style={{
-          boxShadow: '0 0 60px rgba(0,0,0,0.8)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Glow Bar */}
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d1117] text-gray-200">
+      
+      {/* --- Top Header Bar --- */}
+      <div className="flex-none flex items-center justify-between px-6 py-3 border-b iron-border bg-stone-texture shadow-xl relative z-10">
+        
+        {/* Top Glow */}
         <div
           className="absolute top-0 left-0 right-0 h-[2px]"
           style={{
@@ -123,10 +113,9 @@ export default function ChallengePanel({
           }}
         />
 
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 p-6 pb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
               <span className="font-cinzel text-xs uppercase tracking-widest text-gray-400 font-bold">
                 Chamber {room.room_order}
               </span>
@@ -135,7 +124,7 @@ export default function ChallengePanel({
                 style={{
                   color: diffConf.color,
                   borderColor: diffConf.color,
-                  background: 'var(--color-stone-primary)',
+                  background: 'rgba(0,0,0,0.5)',
                   boxShadow: `inset 0 0 8px ${diffConf.glow}`,
                 }}
               >
@@ -143,7 +132,7 @@ export default function ChallengePanel({
               </span>
             </div>
             <h2
-              className="text-2xl md:text-3xl font-black tracking-tight"
+              className="text-xl md:text-2xl font-black tracking-tight"
               style={{
                 fontFamily: 'var(--font-cinzel)',
                 background: `linear-gradient(135deg, #fff 0%, ${diffConf.color} 100%)`,
@@ -154,151 +143,133 @@ export default function ChallengePanel({
             >
               {room.title}
             </h2>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs text-gray-400 font-cinzel">{room.topic}</span>
-              <span className="text-xs font-bold" style={{ color: 'var(--color-gold)' }}>+{room.points} XP</span>
-            </div>
           </div>
-
-          <button
-            onClick={onClose}
-            className="shrink-0 w-9 h-9 flex items-center justify-center rounded border text-gray-400 hover:text-white transition-all duration-200 text-lg font-bold"
-            style={{ borderColor: 'var(--color-iron)', background: 'var(--color-stone-primary)' }}
-          >
-            ×
-          </button>
+          <div className="hidden md:flex flex-col">
+            <span className="text-xs text-gray-400 font-cinzel">{room.topic}</span>
+            <span className="text-xs font-bold" style={{ color: 'var(--color-gold)' }}>+{room.points} XP</span>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col gap-5 p-6 border-t" style={{borderColor: 'var(--color-iron)'}}>
-          {/* Problem Statement */}
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2 text-gray-400 font-cinzel">
-              <span className="text-base">📜</span> Problem Statement
-            </h3>
-            <div
-              className="rounded p-5 text-sm text-gray-200 leading-relaxed whitespace-pre-wrap bg-parchment"
-            >
-              {room.problem_statement || (
-                <span className="text-gray-600 italic font-inter">
-                  Problem statement will appear here once the organizer publishes it.
-                </span>
-              )}
-            </div>
-          </div>
+        <button
+          onClick={onClose}
+          className="stone-btn px-4 py-2 text-sm flex items-center gap-2"
+        >
+          <span>⬅</span> Return to Hall
+        </button>
+      </div>
 
-          {/* Submission Area */}
-          {isCleared ? (
-            /* CLEARED */
-            <div
-              className="rounded p-5 border flex items-start gap-4 iron-border bg-stone-texture"
-            >
-              <span className="text-3xl">✅</span>
-              <div>
-                <p className="text-emerald-400 font-bold font-cinzel">Chamber Cleared!</p>
-                <p className="text-emerald-600/80 text-sm mt-0.5">
-                  Your submission was accepted. Well done, adventurer!
-                </p>
+      {/* --- Main Workspace (Split Pane) --- */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-black">
+        
+        {/* LEFT PANE: Problem Statement & Status */}
+        <div className="w-full lg:w-[40%] xl:w-[35%] flex flex-col border-r iron-border overflow-y-auto bg-stone-texture/50">
+          <div className="p-6 flex flex-col gap-6">
+            
+            {/* Problem Statement Box */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2 text-gray-400 font-cinzel">
+                <span className="text-base">📜</span> Problem Statement
+              </h3>
+              <div
+                className="rounded p-5 text-[15px] text-gray-800 leading-relaxed whitespace-pre-wrap bg-parchment border iron-border shadow-inner font-inter"
+              >
+                {room.problem_statement || (
+                  <span className="text-gray-600 italic">
+                    Problem statement will appear here once published.
+                  </span>
+                )}
               </div>
             </div>
-          ) : isPending ? (
-            /* PENDING */
-            <div
-              className="rounded p-5 border flex items-start gap-4 iron-border bg-stone-texture"
-            >
-              <span className="text-3xl animate-pulse">⏳</span>
-              <div>
-                <p className="text-amber-400 font-bold font-cinzel">Submission Pending Review</p>
-                <p className="text-amber-600/80 text-sm mt-0.5">
-                  A judge is currently verifying your output. Hang tight!
-                </p>
-              </div>
-            </div>
-          ) : (
-            /* EDITOR + SUBMIT */
-            <form
-              onSubmit={onSubmit}
-              className="flex flex-col gap-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Rejection Banner */}
-              {isRejected && (
-                <div
-                  className="rounded p-4 border text-sm iron-border bg-stone-texture"
-                >
-                  <div className="flex items-center gap-2 font-bold mb-1" style={{ color: 'var(--color-error)' }}>
-                    <span className="">⚔️</span> Submission Rejected
-                  </div>
-                  <p className="text-red-500/80">
-                    {submission?.notes || 'Please review your logic and try again.'}
+
+            {/* Status Banners */}
+            {isCleared ? (
+              <div className="rounded p-5 border flex items-start gap-4 iron-border bg-stone-texture shadow-lg">
+                <span className="text-3xl">✅</span>
+                <div>
+                  <p className="text-emerald-400 font-bold font-cinzel text-lg">Chamber Cleared!</p>
+                  <p className="text-emerald-600/80 text-sm mt-1 leading-snug">
+                    Your solution was verified and accepted. The next door has been unlocked!
                   </p>
                 </div>
-              )}
-
-              {/* Monaco Editor */}
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2 text-gray-400 font-cinzel">
-                  <span className="text-base">⚙️</span> Your Solution
-                </h3>
-
-                {/* Editor toolbar */}
-                <div
-                  className="flex items-center justify-between px-4 py-2.5 rounded-t border border-b-0"
-                  style={{
-                    background: 'var(--color-stone-secondary)',
-                    borderColor: 'var(--color-iron)',
-                  }}
-                >
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="ml-2 font-mono text-gray-400">solution.cpp</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-gray-400">C++ (g++)</span>
-                </div>
-
-                {/* Monaco */}
-                <div
-                  className="rounded-b overflow-hidden border"
-                  style={{ borderColor: 'var(--color-iron)' }}
-                >
-                  <Editor
-                    height="360px"
-                    language="cpp"
-                    value={code}
-                    onChange={(val) => onCodeChange(val || '')}
-                    onMount={handleEditorMount}
-                    theme={themeReady ? MEDIEVAL_THEME_NAME : 'vs-dark'}
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
-                      autoClosingBrackets: 'always',
-                      autoClosingQuotes: 'always',
-                      autoIndent: 'full',
-                      lineNumbers: 'on',
-                      scrollBeyondLastLine: false,
-                      padding: { top: 16, bottom: 16 },
-                      cursorBlinking: 'phase',
-                    }}
-                    loading={
-                      <div className="h-[360px] bg-stone-texture flex items-center justify-center">
-                        <div className="text-sm animate-pulse font-mono text-gray-400">
-                          Loading editor...
-                        </div>
-                      </div>
-                    }
-                  />
+              </div>
+            ) : isPending ? (
+              <div className="rounded p-5 border flex items-start gap-4 iron-border bg-stone-texture shadow-lg">
+                <span className="text-3xl animate-pulse">⏳</span>
+                <div>
+                  <p className="text-amber-400 font-bold font-cinzel text-lg">Submission Pending Review</p>
+                  <p className="text-amber-600/80 text-sm mt-1 leading-snug">
+                    Your code is currently being executed by the Dungeon Master. Please hold!
+                  </p>
                 </div>
               </div>
+            ) : isRejected ? (
+              <div className="rounded p-5 border flex items-start gap-4 iron-border bg-stone-texture shadow-lg">
+                <span className="text-3xl">⚔️</span>
+                <div className="flex-1">
+                  <p className="text-red-500 font-bold font-cinzel text-lg mb-1">Submission Rejected</p>
+                  <div className="bg-black/50 rounded p-3 text-sm text-red-400 font-mono overflow-x-auto border border-red-900/50">
+                    {submission?.notes || 'Please review your logic and try again.'}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
+          </div>
+        </div>
+
+        {/* RIGHT PANE: Monaco Code Editor */}
+        <div className="w-full lg:w-[60%] xl:w-[65%] flex flex-col bg-[#0d1117]">
+          
+          {/* Editor Header */}
+          <div className="flex-none px-4 py-2 bg-stone-texture iron-border border-b flex justify-between items-center shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-sm">⚙️</span>
+              <span className="font-mono text-xs text-gray-400">solution.cpp</span>
+            </div>
+            <span className="text-[10px] font-mono text-gray-500 bg-black/40 px-2 py-1 rounded">C++ (g++)</span>
+          </div>
+
+          {/* Editor Container (Flexible Height) */}
+          <div className="flex-1 min-h-0 relative">
+            <Editor
+              height="100%"
+              language="cpp"
+              value={code}
+              onChange={(val) => onCodeChange(val || '')}
+              onMount={handleEditorMount}
+              theme={themeReady ? MEDIEVAL_THEME_NAME : 'vs-dark'}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 15,
+                fontFamily: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                autoIndent: 'full',
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                padding: { top: 16, bottom: 16 },
+                cursorBlinking: 'phase',
+              }}
+              loading={
+                <div className="h-full bg-[#0d1117] flex items-center justify-center">
+                  <div className="text-sm animate-pulse font-mono text-gray-500">
+                    Summoning editor magic...
+                  </div>
+                </div>
+              }
+            />
+          </div>
+
+          {/* Submit Footer */}
+          {!isCleared && !isPending && (
+            <div className="flex-none p-4 bg-stone-texture iron-border border-t flex justify-end items-center gap-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] z-10">
               {submitError && (
-                <p className="text-sm text-red-400 font-mono">{submitError}</p>
+                <p className="text-sm text-red-400 font-mono flex-1 text-right">{submitError}</p>
               )}
-
-              {/* Submit Button */}
               <button
-                type="submit"
+                onClick={(e) => { e.preventDefault(); onSubmit(e); }}
                 disabled={submitting}
-                className="stone-btn px-8 py-3.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto"
+                className="stone-btn px-8 py-3 text-sm md:text-base min-w-[200px]"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -306,11 +277,12 @@ export default function ChallengePanel({
                     Submitting...
                   </span>
                 ) : (
-                  '🔥 Submit for Verification'
+                  '🔥 Submit Solution'
                 )}
               </button>
-            </form>
+            </div>
           )}
+
         </div>
       </div>
     </div>
