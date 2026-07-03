@@ -65,6 +65,17 @@ export default function ChallengePanel({
 }) {
   const [themeReady, setThemeReady] = useState(false);
   const editorRef = useRef(null);
+  
+  const [showReward, setShowReward] = useState(false);
+  const prevCleared = useRef(room?.cleared);
+
+  useEffect(() => {
+    if (room?.cleared && !prevCleared.current) {
+      setShowReward(true);
+      setTimeout(() => setShowReward(false), 3500);
+    }
+    prevCleared.current = room?.cleared;
+  }, [room?.cleared]);
 
   // --- Rearrangement State & Refs ---
   const [rearrangeItems, setRearrangeItems] = useState([]);
@@ -153,6 +164,26 @@ export default function ChallengePanel({
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d1117] text-gray-200">
       
+      {/* --- Reward Overlay --- */}
+      {showReward && (
+        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm pointer-events-none">
+          <div className="relative flex flex-col items-center">
+            <h1 
+              className="text-6xl md:text-8xl font-black font-cinzel text-transparent bg-clip-text animate-level-up" 
+              style={{ backgroundImage: 'linear-gradient(180deg, #FFE066 0%, #D4AF37 50%, #8B6B3F 100%)', filter: 'drop-shadow(0 10px 20px rgba(212,175,55,0.6))' }}
+            >
+              CHAMBER CLEARED!
+            </h1>
+            <div 
+              className="mt-8 text-4xl font-bold text-green-400 font-mono animate-float-up" 
+              style={{ textShadow: '0 0 15px rgba(76,175,80,0.8)' }}
+            >
+              +{room.points} XP
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* --- Top Header Bar --- */}
       <div className="flex-none flex items-center justify-between px-6 py-3 border-b iron-border bg-stone-texture shadow-xl relative z-10">
         

@@ -268,6 +268,7 @@ function App() {
 
   useEffect(() => {
     if (!activeRoomId) { setActiveRoomDetail(null); return; }
+    setActiveRoomDetail(null); // Clear immediately to prevent stale state leak
     let alive=true;
     getRoom(activeRoomId).then(d=>{ if(d.success&&alive) setActiveRoomDetail(d.room); }).catch(()=>{});
     return () => { alive=false; };

@@ -45,6 +45,7 @@ export default function Login({ onLogin, onAdminLogin }) {
   const [adminSecret, setAdminSecret] = useState('');
   const [error, setError]           = useState('');
   const [isLoading, setIsLoading]   = useState(false);
+  const [isEntering, setIsEntering] = useState(false);
 
   const resetForm = (newMode) => {
     setMode(newMode);
@@ -66,7 +67,10 @@ export default function Login({ onLogin, onAdminLogin }) {
         if (!adminSecret.trim()) throw new Error('Admin secret code is required.');
         localStorage.setItem('cd_admin_secret', adminSecret);
         await adminGetSubmissions();
-        onAdminLogin(adminSecret);
+        setIsEntering(true);
+        setTimeout(() => {
+          onAdminLogin(adminSecret);
+        }, 1500);
 
       } else if (mode === 'register') {
         if (password !== confirmPw) throw new Error('Passwords do not match.');
@@ -77,7 +81,10 @@ export default function Login({ onLogin, onAdminLogin }) {
         localStorage.setItem('cd_team_id', data.team.id);
         localStorage.setItem('cd_team_name', data.team.teamName);
         connectSocket(data.team.id);
-        onLogin(data.team);
+        setIsEntering(true);
+        setTimeout(() => {
+          onLogin(data.team);
+        }, 1500);
 
       } else {
         const data = await apiLogin(teamName, password);
@@ -85,20 +92,29 @@ export default function Login({ onLogin, onAdminLogin }) {
         localStorage.setItem('cd_team_id', data.team.id);
         localStorage.setItem('cd_team_name', data.team.teamName);
         connectSocket(data.team.id);
-        onLogin(data.team);
+        setIsEntering(true);
+        setTimeout(() => {
+          onLogin(data.team);
+        }, 1500);
       }
     } catch (err) {
       localStorage.removeItem('cd_admin_secret');
       setError(err.message || 'Authentication failed.');
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-stone-texture"
+      className={`min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-stone-texture ${isEntering ? 'animate-dungeon-enter pointer-events-none' : ''}`}
     >
+      {isEntering && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="text-8xl animate-shatter" style={{ filter: 'drop-shadow(0 0 20px var(--color-gold))' }}>
+            🔒
+          </div>
+        </div>
+      )}
       <div
         className="relative z-10 w-full max-w-4xl rounded p-6 md:p-8 bg-stone-texture iron-border"
         style={{

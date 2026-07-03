@@ -18,7 +18,7 @@ const tabInactive= { color:'#6b7280' };
 const R='#CC1A00'; const RB='#FF3333'; const G='#D4AF37'; const GB='#FFD700';
 
 // ─── Per-team progress helper ─────────────────────────────────────────────────
-function TeamMonitorRow({ team, submissions, rooms }) {
+function TeamMonitorRow({ team, submissions, rooms, isSelected, onClick }) {
   const teamSubs   = submissions.filter(s => s.teams?.id === team.id || s.teams?.team_name === team.team_name);
   const accepted   = teamSubs.filter(s => s.status === 'accepted');
   const pending    = teamSubs.filter(s => s.status === 'pending');
@@ -30,7 +30,16 @@ function TeamMonitorRow({ team, submissions, rooms }) {
     : 0;
 
   return (
-    <div className="rounded-xl p-4" style={card}>
+    <div 
+      className="rounded-xl p-4 cursor-pointer transition-all duration-200 hover:-translate-y-1" 
+      style={{
+        ...card, 
+        border: isSelected ? `2px solid var(--color-gold)` : card.border,
+        boxShadow: isSelected ? `0 0 15px rgba(212,175,55,0.4)` : 'none',
+        background: isSelected ? 'rgba(212,175,55,0.05)' : card.background
+      }}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
           <span className="font-bold text-white text-sm">{team.team_name}</span>
@@ -92,6 +101,7 @@ export default function AdminPortal({ onLogout }) {
   const [teamError, setTeamError] = useState('');
   const [teamSuccess, setTeamSuccess] = useState('');
   const [notification, setNotification] = useState(null);
+  const [selectedTeamFilter, setSelectedTeamFilter] = useState(null);
 
   const showToast = (type, message) => {
     setNotification({ type, message });
@@ -375,18 +385,37 @@ export default function AdminPortal({ onLogout }) {
             {teams.length===0 ? (
               <div className="text-center py-16 text-gray-600 font-mono">No teams registered yet.</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-3 max-h-96 overflow-y-auto pr-2">
                 {teams.map(team => (
-                  <TeamMonitorRow key={team.id} team={team} submissions={submissions} rooms={rooms} />
+                  <TeamMonitorRow 
+                    key={team.id} 
+                    team={team} 
+                    submissions={submissions} 
+                    rooms={rooms} 
+                    isSelected={selectedTeamFilter === team.id}
+                    onClick={() => setSelectedTeamFilter(prev => prev === team.id ? null : team.id)}
+                  />
                 ))}
               </div>
             )}
 
             {/* Submission feed */}
-            <h3 className="font-bold text-base mt-8 mb-4" style={{color:G}}>Recent Activity Feed</h3>
+            <div className="flex items-center justify-between mt-8 mb-4">
+              <h3 className="font-bold text-base" style={{color:G}}>
+                Recent Activity Feed {selectedTeamFilter && `(Filtered)`}
+              </h3>
+              {selectedTeamFilter && (
+                <button onClick={() => setSelectedTeamFilter(null)} className="text-xs text-red-400 hover:text-red-300">
+                  Clear Filter ✕
+                </button>
+              )}
+            </div>
             <div className="rounded-2xl p-4" style={panel}>
               <div className="space-y-2 max-h-72 overflow-y-auto">
-                {submissions.slice(0,20).map(sub=>(
+                {submissions
+                  .filter(sub => !selectedTeamFilter || sub.teams?.id === selectedTeamFilter)
+                  .slice(0,50)
+                  .map(sub=>(
                   <div key={sub.id} className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs" style={card}>
                     <span className={`w-2 h-2 rounded-full shrink-0 ${sub.status==='pending'?'bg-yellow-400 animate-pulse':sub.status==='accepted'?'bg-emerald-400':'bg-red-600'}`}/>
                     <span className="font-bold text-white">{sub.teams?.team_name}</span>

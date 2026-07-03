@@ -11,28 +11,35 @@
 export const ROOM_STARTERS = {
   1: {
     language: 'cpp',
-    starterCode: `#include <iostream>
-using namespace std;
-
-int main() {
-    // Write your solution here
-
-    return 0;
-}`,
+    starterCode: `// Section 1: Arrange the Code (Easy)
+// Rearrange the blocks to solve the problem.`,
   },
   2: {
     language: 'cpp',
-    starterCode: `#include <iostream>
-#include <vector>
-using namespace std;
-
-int main() {
-    // Write your solution here
-
-    return 0;
-}`,
+    starterCode: `// Section 1: Arrange the Code (Medium)
+// Rearrange the blocks to solve the problem.`,
   },
   3: {
+    language: 'cpp',
+    starterCode: `// Section 1: Arrange the Code (Hard)
+// Rearrange the blocks to solve the problem.`,
+  },
+  4: {
+    language: 'cpp',
+    starterCode: `// Section 2: Predict the Output (Medium)
+// Analyze the code in the problem statement and type the exact output.`,
+  },
+  5: {
+    language: 'cpp',
+    starterCode: `// Section 2: Predict the Output (Medium)
+// Analyze the code in the problem statement and type the exact output.`,
+  },
+  6: {
+    language: 'cpp',
+    starterCode: `// Section 2: Predict the Output (Hard)
+// Analyze the code in the problem statement and type the exact output.`,
+  },
+  7: {
     language: 'cpp',
     starterCode: `#include <iostream>
 #include <string>
@@ -40,35 +47,21 @@ int main() {
 using namespace std;
 
 int main() {
-    // Write your solution here
-
+    // Write your solution for The Cipher Gate
+    
     return 0;
 }`,
   },
-  4: {
+  8: {
     language: 'cpp',
     starterCode: `#include <iostream>
 #include <vector>
-#include <map>
-using namespace std;
-
-int main() {
-    // Write your solution here
-
-    return 0;
-}`,
-  },
-  5: {
-    language: 'cpp',
-    starterCode: `#include <iostream>
-#include <vector>
-#include <queue>
 #include <algorithm>
 using namespace std;
 
 int main() {
-    // Boss Chamber — Write your final solution here
-
+    // Write your final solution for Dungeon Energy Network (Boss)
+    
     return 0;
 }`,
   },
