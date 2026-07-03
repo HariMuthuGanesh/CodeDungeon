@@ -98,7 +98,8 @@ const createSubmission = async (req, res, next) => {
       reviewedAt = new Date().toISOString();
       reviewDuration = 0;
     } else if (room.type === 'pattern_manual') {
-      const isCorrect = (notes || '').trim() === (room.expected_pattern || '').trim();
+      const normalize = (str) => (str || '').replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
+      const isCorrect = normalize(notes) === normalize(room.expected_pattern);
       finalStatus = isCorrect ? 'accepted' : 'rejected';
       reviewNotes = isCorrect ? 'Pattern match successful.' : 'the submission was failed';
       reviewedAt = new Date().toISOString();

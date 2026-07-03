@@ -26,18 +26,15 @@ export const ROOM_STARTERS = {
   },
   4: {
     language: 'cpp',
-    starterCode: `// Section 2: Predict the Output (Medium)
-// Analyze the code in the problem statement and type the exact output.`,
+    starterCode: ``,
   },
   5: {
     language: 'cpp',
-    starterCode: `// Section 2: Predict the Output (Medium)
-// Analyze the code in the problem statement and type the exact output.`,
+    starterCode: ``,
   },
   6: {
     language: 'cpp',
-    starterCode: `// Section 2: Predict the Output (Hard)
-// Analyze the code in the problem statement and type the exact output.`,
+    starterCode: ``,
   },
   7: {
     language: 'cpp',

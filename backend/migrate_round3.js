@@ -17,7 +17,8 @@ Output: 15`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include <iostream>', 'using namespace std;', 'int main() {', 'int n;', 'cin >> n;', 'int sum = 0;', 'for(int i = 1; i <= n; i++)', '    sum += i;', 'cout << sum;', 'return 0;', '}'],
-    shuffled_order: ['#include <iostream>', 'int main() {', 'int n;', 'cin >> n;', 'int sum = 0;', 'for(int i = 1; i <= n; i++)', '    sum += i;', 'cout << sum;', 'return 0;', '}'] // simplified for brevity but matching actual frontend config
+    shuffled_order: ['int main() {', 'cin >> n;', 'int sum = 0;', 'for(int i = 1; i <= n; i++)', 'using namespace std;', '#include <iostream>', '}', 'cout << sum;', 'return 0;', 'int n;', '    sum += i;']
+
   },
   {
     room_order: 2,
@@ -31,7 +32,7 @@ Output: Prime`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int n;', 'cin>>n;', 'bool prime = true;', 'if(n<2)', 'prime=false;', 'for(int i=2;i*i<=n;i++){', 'if(n%i==0)', 'prime=false;', '}', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}'],
-    shuffled_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int n;', 'cin>>n;', 'bool prime = true;', 'if(n<2)', 'prime=false;', 'for(int i=2;i*i<=n;i++){', 'if(n%i==0)', 'prime=false;', '}', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}']
+    shuffled_order: ['int n;', 'cout<<"Not Prime";', 'if(n<2)', '#include<iostream>', 'prime=false;', '}', 'if(n%i==0)', 'return 0;', 'using namespace std;', 'cout<<"Prime";', 'else', 'cin>>n;', 'for(int i=2;i*i<=n;i++){', 'if(prime)', '}', 'bool prime = true;', 'prime=false;', 'int main(){']
   },
   {
     room_order: 3,
@@ -46,37 +47,42 @@ Output: 5 1 2 3 4`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int a[100],n;', 'cin>>n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', 'a[0]=temp;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'return 0;', '}'],
-    shuffled_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int a[100],n;', 'cin>>n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', 'a[0]=temp;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'return 0;', '}']
+    shuffled_order: ['cin>>a[i];', 'return 0;', 'for(int i=0;i<n;i++)', 'int a[100],n;', 'for(int i=n-1;i>0;i--)', '}', 'using namespace std;', 'a[0]=temp;', 'cin>>n;', '#include<iostream>', 'int temp=a[n-1];', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'int main(){', 'a[i]=a[i-1];']
   },
   
   // SECTION 2: PATTERN PREDICTION
   {
     room_order: 4,
-    title: 'The Starry Loop',
-    topic: 'Nested Loops',
+    title: 'The Pascal Loop',
+    topic: 'Nested Loops & Math',
     difficulty: 'medium',
     points: 30,
     problem_statement: `Predict the output
 \`\`\`cpp
-#include<iostream>
+#include <iostream>
 using namespace std;
 
-int main()
-{
-    int n=5;
+int main() {
+    int n = 5;
 
-    for(int i=1;i<=n;i++)
-    {
-        for(int j=1;j<=i;j++)
-            cout<<"*";
-
-        cout<<endl;
+    for (int i = 0; i < n; i++) {
+        for (int s = 0; s < n - i - 1; s++) {
+            cout << " ";
+        }
+        int num = 1;
+        for (int j = 0; j <= i; j++) {
+            cout << num << " ";
+            num = num * (i - j) / (j + 1);
+        }
+        cout << endl;
     }
+
+    return 0;
 }
 \`\`\``,
     section: 2,
     type: 'pattern_manual',
-    expected_pattern: '*\n**\n***\n****\n*****'
+    expected_pattern: '    1 \n   1 1 \n  1 2 1 \n 1 3 3 1 \n1 4 6 4 1 '
   },
   {
     room_order: 5,

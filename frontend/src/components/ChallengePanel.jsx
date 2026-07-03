@@ -392,8 +392,16 @@ export default function ChallengePanel({
                 </div>
                 <textarea
                   value={code}
-                  onCopy={(e) => e.preventDefault()}
-                  onPaste={(e) => e.preventDefault()}
+                  onCopy={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onPaste={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onCut={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'v' || e.key.toLowerCase() === 'x')) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
                   onChange={(e) => onCodeChange(e.target.value)}
                   disabled={isCleared || isPending}
                   placeholder="Type your predicted output pattern here..."
@@ -403,8 +411,16 @@ export default function ChallengePanel({
             ) : (
               <div 
                 className="h-full w-full"
-                onCopyCapture={(e) => e.preventDefault()}
-                onPasteCapture={(e) => e.preventDefault()}
+                onCopyCapture={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onPasteCapture={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onCutCapture={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onContextMenu={(e) => e.preventDefault()}
+                onKeyDownCapture={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'v' || e.key.toLowerCase() === 'x')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }}
               >
                 <Editor
                   height="100%"
@@ -414,6 +430,7 @@ export default function ChallengePanel({
                 onMount={handleEditorMount}
                 theme={themeReady ? MEDIEVAL_THEME_NAME : 'vs-dark'}
                 options={{
+                  contextmenu: false,
                   readOnly: isCleared || isPending,
                   minimap: { enabled: false },
                   fontSize: 15,
