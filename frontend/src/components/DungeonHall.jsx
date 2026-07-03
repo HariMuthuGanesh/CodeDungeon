@@ -1,4 +1,3 @@
-ccls
 import { useState, useEffect, useRef } from 'react';
 
 const R = '#CC1A00'; const RB = '#FF3333'; const G = '#F5A623'; const GB = '#FFD700';
