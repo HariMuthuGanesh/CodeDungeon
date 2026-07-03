@@ -4,8 +4,22 @@ require('dotenv').config();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 const rooms = [
+  // SECTION 1: REARRANGEMENT
   {
     room_order: 1,
+    title: 'The Swap Ritual',
+    topic: 'Variables',
+    difficulty: 'easy',
+    points: 10,
+    problem_statement: `Arrange the code to swap two variables 'a' and 'b' and print their values.
+Output should be: 10 5`,
+    section: 1,
+    type: 'rearrangement',
+    correct_order: ['#include <iostream>', 'using namespace std;', 'int main() {', 'int a = 5, b = 10;', 'int temp = a;', 'a = b;', 'b = temp;', 'cout << a << " " << b;', 'return 0;', '}'],
+    shuffled_order: ['b = temp;', 'int main() {', 'int temp = a;', 'a = b;', '#include <iostream>', 'return 0;', '}', 'using namespace std;', 'int a = 5, b = 10;', 'cout << a << " " << b;']
+  },
+  {
+    room_order: 2,
     title: 'The Sum Scroll',
     topic: 'Basic Loops',
     difficulty: 'easy',
@@ -19,7 +33,7 @@ Output: 15`,
     shuffled_order: ['int main() {', 'int sum = 0;', 'cout << sum;', 'cin >> n;', 'return 0;', '}', 'for(int i = 1; i <= n; i++)', '    sum += i;', '#include <iostream>', 'using namespace std;', 'int n;']
   },
   {
-    room_order: 2,
+    room_order: 3,
     title: 'The Prime Oracle',
     topic: 'Logic',
     difficulty: 'medium',
@@ -33,7 +47,7 @@ Output: Prime`,
     shuffled_order: ['bool prime = true;', 'int main(){', 'for(int i=2;i*i<=n;i++){', '#include<iostream>', 'using namespace std;', 'if(n<2)', 'prime=false;', 'if(n%i==0)', 'prime=false;', 'int n;', 'cin>>n;', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}', '}']
   },
   {
-    room_order: 3,
+    room_order: 4,
     title: 'The Array Spinner',
     topic: 'Arrays',
     difficulty: 'hard',
@@ -47,23 +61,25 @@ Output: 5 1 2 3 4`,
     correct_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int a[100],n;', 'cin>>n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', 'a[0]=temp;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'return 0;', '}'],
     shuffled_order: ['int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', '#include<iostream>', 'using namespace std;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'int main(){', 'cin>>n;', 'a[0]=temp;', 'int a[100],n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'return 0;', '}']
   },
+  
+  // SECTION 2: PATTERN PREDICTION
   {
-    room_order: 4,
-    title: 'The Pointer Trap',
-    topic: 'Pointers',
-    difficulty: 'medium',
-    points: 40,
+    room_order: 5,
+    title: 'The Starry Loop',
+    topic: 'Nested Loops',
+    difficulty: 'easy',
+    points: 20,
     problem_statement: `Predict the exact output pattern of the following code.
 
 \`\`\`cpp
 #include <iostream>
 using namespace std;
 int main() {
-    int arr[] = {10, 20, 30, 40, 50};
-    int *p = arr;
-    *(p++) += 5;
-    *++p += 10;
-    cout << arr[0] << " " << arr[1] << " " << arr[2];
+    for(int i = 1; i <= 2; i++) {
+        for(int j = 1; j <= 2; j++) {
+            cout << i + j;
+        }
+    }
     return 0;
 }
 \`\`\`
@@ -71,10 +87,37 @@ int main() {
 Input your predicted output exactly as it appears.`,
     section: 2,
     type: 'pattern_manual',
-    expected_pattern: '15 20 40'
+    expected_pattern: '2334'
   },
   {
-    room_order: 5,
+    room_order: 6,
+    title: 'The Casting Stone',
+    topic: 'Array Traversal',
+    difficulty: 'medium',
+    points: 30,
+    problem_statement: `Predict the exact output pattern of the following code.
+
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+int main() {
+    int arr[] = {2, 4, 6, 8, 10};
+    int sum = 0;
+    for(int i = 0; i < 5; i += 2) {
+        sum += arr[i];
+    }
+    cout << sum;
+    return 0;
+}
+\`\`\`
+
+Input your predicted output exactly as it appears.`,
+    section: 2,
+    type: 'pattern_manual',
+    expected_pattern: '18'
+  },
+  {
+    room_order: 7,
     title: 'The Recursive Binary',
     topic: 'Recursion',
     difficulty: 'medium',
@@ -101,7 +144,7 @@ Input your predicted output exactly as it appears.`,
     expected_pattern: '11001'
   },
   {
-    room_order: 6,
+    room_order: 8,
     title: 'The String Illusion',
     topic: 'String Manipulation',
     difficulty: 'hard',
@@ -127,8 +170,10 @@ Input your predicted output exactly as it appears.`,
     type: 'pattern_manual',
     expected_pattern: 'Etoffno'
   },
+
+  // SECTION 3: FULL CODING
   {
-    room_order: 7,
+    room_order: 9,
     title: 'The Cipher Gate',
     topic: 'Strings & Parsing',
     difficulty: 'hard',
@@ -145,32 +190,35 @@ A single line string. (1 <= Length <= 100000)
 Input: \`Never Odd Or Even\`
 Output: \`OPEN\``,
     section: 3,
-    type: 'coding_auto'
+    type: 'coding_manual'
   },
   {
-    room_order: 8,
-    title: 'Dungeon Energy Network',
-    topic: 'Dynamic Programming',
+    room_order: 10,
+    title: 'The Balanced Scales',
+    topic: 'Stacks & Logic',
     difficulty: 'boss',
     points: 120,
-    problem_statement: `The dungeon consists of N rooms, each containing an energy crystal.
-The strength of each crystal is given as an array.
-Your task is to determine the maximum sum of any contiguous sequence of rooms.
+    problem_statement: `To unlock the final treasure vault, you must balance the scales of magic.
+Given a string containing only the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
+
+An input string is valid if:
+1. Open brackets must be closed by the same type of brackets.
+2. Open brackets must be closed in the correct order.
+
+**Print**
+\`VALID\` or \`INVALID\`
 
 **Input**
-First line: \`N\` (1 <= N <= 100000)
-Second line: N space-separated integers.
-
-**Output**
-Maximum contiguous energy sum.
+A single line string.
 
 **Example**
-Input:
-\`8\`
-\`-2 -3 4 -1 -2 1 5 -3\`
-Output: \`7\``,
+Input: \`{[]}\`
+Output: \`VALID\`
+
+Input: \`([)]\`
+Output: \`INVALID\``,
     section: 3,
-    type: 'coding_auto'
+    type: 'coding_manual'
   }
 ];
 
@@ -194,7 +242,7 @@ async function run() {
   
   console.log('✅ Seeding complete!');
   
-  console.log('\n⚡ IMPORTANT SQL COMMAND ⚡');
+  console.log('\\n⚡ IMPORTANT SQL COMMAND ⚡');
   console.log('Run the following command in the Supabase SQL Editor to update the leaderboard scoring:');
   console.log(`
 CREATE OR REPLACE VIEW leaderboard AS

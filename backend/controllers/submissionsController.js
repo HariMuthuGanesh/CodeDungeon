@@ -94,7 +94,13 @@ const createSubmission = async (req, res, next) => {
       }
       
       finalStatus = isCorrect ? 'accepted' : 'rejected';
-      reviewNotes = isCorrect ? 'Sequence match successful.' : 'Incorrect sequence.';
+      reviewNotes = isCorrect ? 'Sequence match successful.' : 'Overall there is a error in the arrangements';
+      reviewedAt = new Date().toISOString();
+      reviewDuration = 0;
+    } else if (room.type === 'pattern_manual') {
+      const isCorrect = (notes || '').trim() === (room.expected_pattern || '').trim();
+      finalStatus = isCorrect ? 'accepted' : 'rejected';
+      reviewNotes = isCorrect ? 'Pattern match successful.' : 'the submission was failed';
       reviewedAt = new Date().toISOString();
       reviewDuration = 0;
     } else if (room.type === 'coding_auto') {
