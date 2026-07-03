@@ -328,7 +328,7 @@ function App() {
         </div>
       </div>
 
-      {challengeOpen && activeRoomDetail && (
+      {challengeOpen && activeRoomDetail && activeRoomDetail.id === activeRoomId && (
         <ChallengePanel
           room={activeRoomDetail}
           code={activeCode}
