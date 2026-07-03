@@ -387,6 +387,8 @@ export default function ChallengePanel({
                 </label>
                 <textarea
                   value={code}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
                   onChange={(e) => onCodeChange(e.target.value)}
                   disabled={isCleared || isPending}
                   placeholder="Type your predicted output pattern here..."
@@ -394,9 +396,14 @@ export default function ChallengePanel({
                 />
               </div>
             ) : (
-              <Editor
-                height="100%"
-                language="cpp"
+              <div 
+                className="h-full w-full"
+                onCopyCapture={(e) => e.preventDefault()}
+                onPasteCapture={(e) => e.preventDefault()}
+              >
+                <Editor
+                  height="100%"
+                  language="cpp"
                 value={code}
                 onChange={(val) => onCodeChange(val || '')}
                 onMount={handleEditorMount}
@@ -422,6 +429,7 @@ export default function ChallengePanel({
                   </div>
                 }
               />
+              </div>
             )}
           </div>
 

@@ -336,7 +336,16 @@ export default function AdminPortal({ onLogout }) {
                     </div>
                   </div>
                   <div className="flex-grow flex flex-col my-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-widest mb-2 font-mono text-gray-500">Submitted Code</h4>
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-widest font-mono text-gray-500">Submitted Code</h4>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText(selectedSub.notes || '')}
+                        className="px-2 py-1 bg-stone-800 hover:bg-stone-700 text-gray-300 rounded text-[10px] font-mono transition-colors border border-stone-600"
+                        title="Copy Code"
+                      >
+                        Copy
+                      </button>
+                    </div>
                     <pre className="flex-grow p-4 rounded-xl text-xs overflow-auto font-mono leading-relaxed max-h-96 min-h-48 whitespace-pre-wrap"
                       style={{background:'rgba(0,0,0,0.6)', border:'1px solid rgba(0,255,0,0.1)', color:'#4ade80'}}>
                       {selectedSub.notes || '// No code submitted.'}
