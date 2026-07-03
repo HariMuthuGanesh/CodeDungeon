@@ -382,9 +382,14 @@ export default function ChallengePanel({
               </div>
             ) : room.type === 'pattern_manual' ? (
               <div className="max-w-2xl mx-auto py-6 flex flex-col gap-4">
-                <label className="block text-xs font-mono uppercase tracking-wider text-amber-500/80">
-                  Enter output prediction:
-                </label>
+                <div className="flex flex-col gap-1">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-amber-500/80">
+                    Enter output prediction:
+                  </label>
+                  <span className="text-[10px] font-mono text-rose-400/90 tracking-wide">
+                    ⚠️ IMPORTANT: Do NOT include terminal command lines or paths (e.g., C:\Users\...). Submit ONLY the raw output!
+                  </span>
+                </div>
                 <textarea
                   value={code}
                   onCopy={(e) => e.preventDefault()}

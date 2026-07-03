@@ -91,7 +91,7 @@ export default function AdminPortal({ onLogout }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [scoreboardA, setScoreboardA] = useState([]);
   const [scoreboardB, setScoreboardB] = useState([]);
-  const [selectedSub, setSelectedSub] = useState(null);
+  const [selectedSubId, setSelectedSubId] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
@@ -116,10 +116,6 @@ export default function AdminPortal({ onLogout }) {
       if (rRes.success) setRooms(rRes.rooms);
       if (sRes.success) {
         setSubmissions(sRes.submissions);
-        if (selectedSub) {
-          const upd = sRes.submissions.find(s=>s.id===selectedSub.id);
-          setSelectedSub(upd||null);
-        }
       }
       if (tRes.success) setTeams(tRes.teams);
       if (lRes.success) setLeaderboard(lRes.leaderboard);
@@ -128,7 +124,7 @@ export default function AdminPortal({ onLogout }) {
         setScoreboardB(sbRes.scoreboardB || []);
       }
     } catch(e){ console.error(e); }
-  }, [selectedSub]);
+  }, []);
 
   useEffect(() => {
     fetchAll();
@@ -222,6 +218,8 @@ export default function AdminPortal({ onLogout }) {
     </div>
   );
 
+  const selectedSub = submissions.find(s => s.id === selectedSubId);
+
   return (
     <div className="min-h-screen p-4 md:p-6 bg-stone-texture text-gray-200">
       {/* Toast */}
@@ -272,12 +270,17 @@ export default function AdminPortal({ onLogout }) {
         {activeTab==='submissions' && (
           <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
             <div className="lg:col-span-4 p-4 h-[calc(100vh-280px)] overflow-y-auto" style={panel}>
-              <h3 className="font-bold text-base mb-4 text-gray-200">Pending Review</h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-base text-gray-200">Pending Review</h3>
+                <button onClick={fetchAll} className="text-xs px-2 py-1 rounded bg-stone-800 hover:bg-stone-700 transition-colors border border-stone-600 text-gray-300">
+                  🔄 Refresh
+                </button>
+              </div>
               <div className="space-y-2">
                 {submissions.filter(s=>s.status==='pending').map(sub=>(
-                  <button key={sub.id} onClick={()=>{setSelectedSub(sub);setRejectReason('');}}
+                  <button key={sub.id} onClick={()=>{setSelectedSubId(sub.id);setRejectReason('');}}
                     className="w-full text-left p-4 rounded-xl transition-all duration-200"
-                    style={selectedSub?.id===sub.id
+                    style={selectedSubId===sub.id
                       ? {border:`1px solid ${R}`, background:'rgba(204,26,0,0.1)', boxShadow:`0 0 12px rgba(204,26,0,0.2)`}
                       : {border:'1px solid rgba(255,255,255,0.06)', background:'rgba(20,5,0,0.4)'}}>
                     <div className="flex justify-between items-start gap-2">
@@ -301,7 +304,9 @@ export default function AdminPortal({ onLogout }) {
                 Reviewed
               </h3>
               <div className="space-y-2 opacity-60">
-                {submissions.filter(s=>s.status!=='pending').slice(0,12).map(sub=>(
+                {submissions.filter(s=>s.status!=='pending')
+                  .sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at))
+                  .slice(0,12).map(sub=>(
                   <div key={sub.id} className="p-3 rounded-lg flex justify-between items-center text-xs" style={card}>
                     <div>
                       <span className="font-semibold text-gray-300 block">{sub.teams?.team_name}</span>
@@ -386,9 +391,14 @@ export default function AdminPortal({ onLogout }) {
           <div>
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold text-lg" style={{color:G}}>Real-Time Team Progress</h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"/>
-                Auto-refreshes every 15s
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-xs text-gray-500 font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"/>
+                  Auto-refreshes every 15s
+                </div>
+                <button onClick={fetchAll} className="text-xs px-2 py-1 rounded bg-stone-800 hover:bg-stone-700 transition-colors border border-stone-600 text-gray-300">
+                  🔄 Refresh
+                </button>
               </div>
             </div>
             {teams.length===0 ? (
@@ -423,6 +433,7 @@ export default function AdminPortal({ onLogout }) {
               <div className="space-y-2 max-h-72 overflow-y-auto">
                 {submissions
                   .filter(sub => !selectedTeamFilter || sub.teams?.id === selectedTeamFilter)
+                  .sort((a,b) => new Date(b.submitted_at) - new Date(a.submitted_at))
                   .slice(0,50)
                   .map(sub=>(
                   <div key={sub.id} className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs" style={card}>

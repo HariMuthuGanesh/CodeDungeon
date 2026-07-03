@@ -17,7 +17,7 @@ Output: 15`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include <iostream>', 'using namespace std;', 'int main() {', 'int n;', 'cin >> n;', 'int sum = 0;', 'for(int i = 1; i <= n; i++)', '    sum += i;', 'cout << sum;', 'return 0;', '}'],
-    shuffled_order: ['int main() {', 'int sum = 0;', 'cout << sum;', 'cin >> n;', 'return 0;', '}', 'for(int i = 1; i <= n; i++)', '    sum += i;', '#include <iostream>', 'using namespace std;', 'int n;']
+    shuffled_order: ['#include <iostream>', 'int main() {', 'int n;', 'cin >> n;', 'int sum = 0;', 'for(int i = 1; i <= n; i++)', '    sum += i;', 'cout << sum;', 'return 0;', '}'] // simplified for brevity but matching actual frontend config
   },
   {
     room_order: 2,
@@ -31,7 +31,7 @@ Output: Prime`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int n;', 'cin>>n;', 'bool prime = true;', 'if(n<2)', 'prime=false;', 'for(int i=2;i*i<=n;i++){', 'if(n%i==0)', 'prime=false;', '}', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}'],
-    shuffled_order: ['bool prime = true;', 'int main(){', 'for(int i=2;i*i<=n;i++){', '#include<iostream>', 'using namespace std;', 'if(n<2)', 'prime=false;', 'if(n%i==0)', 'prime=false;', 'int n;', 'cin>>n;', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}', '}']
+    shuffled_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int n;', 'cin>>n;', 'bool prime = true;', 'if(n<2)', 'prime=false;', 'for(int i=2;i*i<=n;i++){', 'if(n%i==0)', 'prime=false;', '}', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}']
   },
   {
     room_order: 3,
@@ -46,7 +46,7 @@ Output: 5 1 2 3 4`,
     section: 1,
     type: 'rearrangement',
     correct_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int a[100],n;', 'cin>>n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', 'a[0]=temp;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'return 0;', '}'],
-    shuffled_order: ['int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', '#include<iostream>', 'using namespace std;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'int main(){', 'cin>>n;', 'a[0]=temp;', 'int a[100],n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'return 0;', '}']
+    shuffled_order: ['#include<iostream>', 'using namespace std;', 'int main(){', 'int a[100],n;', 'cin>>n;', 'for(int i=0;i<n;i++)', 'cin>>a[i];', 'int temp=a[n-1];', 'for(int i=n-1;i>0;i--)', 'a[i]=a[i-1];', 'a[0]=temp;', 'for(int i=0;i<n;i++)', 'cout<<a[i]<<" ";', 'return 0;', '}']
   },
   
   // SECTION 2: PATTERN PREDICTION
@@ -54,110 +54,93 @@ Output: 5 1 2 3 4`,
     room_order: 4,
     title: 'The Starry Loop',
     topic: 'Nested Loops',
-    difficulty: 'easy',
-    points: 20,
-    problem_statement: `Predict the exact output pattern of the following code.
-
+    difficulty: 'medium',
+    points: 30,
+    problem_statement: `Predict the output
 \`\`\`cpp
-#include <iostream>
+#include<iostream>
 using namespace std;
-int main() {
-    for(int i = 1; i <= 2; i++) {
-        for(int j = 1; j <= 2; j++) {
-            cout << i + j;
-        }
-    }
-    return 0;
-}
-\`\`\`
 
-Input your predicted output exactly as it appears.`,
+int main()
+{
+    int n=5;
+
+    for(int i=1;i<=n;i++)
+    {
+        for(int j=1;j<=i;j++)
+            cout<<"*";
+
+        cout<<endl;
+    }
+}
+\`\`\``,
     section: 2,
     type: 'pattern_manual',
-    expected_pattern: '2334'
+    expected_pattern: '*\n**\n***\n****\n*****'
   },
   {
     room_order: 5,
-    title: 'The Casting Stone',
-    topic: 'Array Traversal',
+    title: 'The Number Loop',
+    topic: 'Loops',
     difficulty: 'medium',
     points: 30,
-    problem_statement: `Predict the exact output pattern of the following code.
-
+    problem_statement: `Predict the output
 \`\`\`cpp
-#include <iostream>
+#include<iostream>
 using namespace std;
-int main() {
-    int arr[] = {2, 4, 6, 8, 10};
-    int sum = 0;
-    for(int i = 0; i < 5; i += 2) {
-        sum += arr[i];
-    }
-    cout << sum;
-    return 0;
-}
-\`\`\`
 
-Input your predicted output exactly as it appears.`,
+int main()
+{
+    int n=5;
+
+    for(int i=n;i>=1;i--)
+    {
+        for(int j=1;j<=i;j++)
+            cout<<j<<" ";
+
+        cout<<endl;
+    }
+}
+\`\`\``,
     section: 2,
     type: 'pattern_manual',
-    expected_pattern: '18'
+    expected_pattern: '1 2 3 4 5\n1 2 3 4\n1 2 3\n1 2\n1'
   },
   {
     room_order: 6,
-    title: 'The String Illusion',
-    topic: 'String Manipulation',
+    title: 'The Pyramid Scheme',
+    topic: 'Nested Loops',
     difficulty: 'hard',
     points: 50,
-    problem_statement: `Predict the exact output pattern of the following code.
-
+    problem_statement: `Predict the output
 \`\`\`cpp
-#include <iostream>
+#include<iostream>
 using namespace std;
-int main() {
-    char str[] = "Dungeon";
-    for(int i = 0; str[i] != '\\0'; i++) {
-        if(i % 2 == 0) str[i] = str[i] + 1;
-        else str[i] = str[i] - 1;
-    }
-    cout << str;
-    return 0;
-}
-\`\`\`
 
-Input your predicted output exactly as it appears.`,
+int main()
+{
+    int n=5;
+
+    for(int i=1;i<=n;i++)
+    {
+        for(int j=1;j<=n-i;j++)
+            cout<<" ";
+
+        for(int k=1;k<=2*i-1;k++)
+            cout<<"*";
+
+        cout<<endl;
+    }
+}
+\`\`\``,
     section: 2,
     type: 'pattern_manual',
-    expected_pattern: 'Etoffno'
+    expected_pattern: '    *\n   ***\n  *****\n *******\n*********'
   },
 
   // SECTION 3: FULL CODING
   {
     room_order: 7,
-    title: 'The Missing Artifact',
-    topic: 'Arrays & Math',
-    difficulty: 'medium',
-    points: 50,
-    problem_statement: `You are given an array of size N-1 that contains distinct integers in the range of 1 to N. Find the missing number.
-
-**Print**
-The missing integer.
-
-**Input**
-First line contains N.
-Second line contains N-1 space separated integers.
-
-**Example**
-Input: 
-\`5\`
-\`1 2 4 5\`
-Output: 
-\`3\``,
-    section: 3,
-    type: 'coding_manual'
-  },
-  {
-    room_order: 8,
     title: 'The Cipher Gate',
     topic: 'Strings & Parsing',
     difficulty: 'hard',
@@ -174,35 +157,33 @@ A single line string. (1 <= Length <= 100000)
 Input: \`Never Odd Or Even\`
 Output: \`OPEN\``,
     section: 3,
-    type: 'coding_manual'
+    type: 'coding_auto'
   },
   {
-    room_order: 9,
-    title: 'The Balanced Scales',
-    topic: 'Stacks & Logic',
+    room_order: 8,
+    title: 'Dungeon Energy Network',
+    topic: 'Arrays & Logic',
     difficulty: 'boss',
     points: 120,
-    problem_statement: `To unlock the final treasure vault, you must balance the scales of magic.
-Given a string containing only the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
-
-An input string is valid if:
-1. Open brackets must be closed by the same type of brackets.
-2. Open brackets must be closed in the correct order.
-
-**Print**
-\`VALID\` or \`INVALID\`
+    problem_statement: `The dungeon consists of N rooms, each containing an energy crystal.
+The strength of each crystal is given as an array.
+Your task is to determine the maximum sum of any contiguous sequence of rooms.
 
 **Input**
-A single line string.
+N
+Array
+
+**Output**
+Maximum energy.
 
 **Example**
-Input: \`{[]}\`
-Output: \`VALID\`
-
-Input: \`([)]\`
-Output: \`INVALID\``,
+Input:
+\`8\`
+\`-2 -3 4 -1 -2 1 5 -3\`
+Output:
+\`7\``,
     section: 3,
-    type: 'coding_manual'
+    type: 'coding_auto'
   }
 ];
 
@@ -225,25 +206,6 @@ async function run() {
   }
   
   console.log('✅ Seeding complete!');
-  
-  console.log('\\n⚡ IMPORTANT SQL COMMAND ⚡');
-  console.log('Run the following command in the Supabase SQL Editor to update the leaderboard scoring:');
-  console.log(`
-CREATE OR REPLACE VIEW leaderboard AS
-SELECT
-  t.id AS team_id,
-  t.team_name,
-  COUNT(s.id)                AS rooms_cleared,
-  COALESCE(SUM(r.points), 0) AS total_points,
-  -- Calculate time elapsed from team creation to their final cleared room (in seconds)
-  EXTRACT(EPOCH FROM (MAX(s.submitted_at) - t.created_at)) AS total_time_seconds,
-  MAX(s.submitted_at)        AS last_submission_at
-FROM teams t
-LEFT JOIN submissions s ON s.team_id = t.id AND s.status = 'accepted'
-LEFT JOIN rooms r ON r.id = s.room_id
-GROUP BY t.id, t.team_name, t.created_at
-ORDER BY total_points DESC, total_time_seconds ASC NULLS LAST;
-  `);
 }
 
 run();
