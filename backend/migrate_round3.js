@@ -7,19 +7,6 @@ const rooms = [
   // SECTION 1: REARRANGEMENT
   {
     room_order: 1,
-    title: 'The Swap Ritual',
-    topic: 'Variables',
-    difficulty: 'easy',
-    points: 10,
-    problem_statement: `Arrange the code to swap two variables 'a' and 'b' and print their values.
-Output should be: 10 5`,
-    section: 1,
-    type: 'rearrangement',
-    correct_order: ['#include <iostream>', 'using namespace std;', 'int main() {', 'int a = 5, b = 10;', 'int temp = a;', 'a = b;', 'b = temp;', 'cout << a << " " << b;', 'return 0;', '}'],
-    shuffled_order: ['b = temp;', 'int main() {', 'int temp = a;', 'a = b;', '#include <iostream>', 'return 0;', '}', 'using namespace std;', 'int a = 5, b = 10;', 'cout << a << " " << b;']
-  },
-  {
-    room_order: 2,
     title: 'The Sum Scroll',
     topic: 'Basic Loops',
     difficulty: 'easy',
@@ -33,7 +20,7 @@ Output: 15`,
     shuffled_order: ['int main() {', 'int sum = 0;', 'cout << sum;', 'cin >> n;', 'return 0;', '}', 'for(int i = 1; i <= n; i++)', '    sum += i;', '#include <iostream>', 'using namespace std;', 'int n;']
   },
   {
-    room_order: 3,
+    room_order: 2,
     title: 'The Prime Oracle',
     topic: 'Logic',
     difficulty: 'medium',
@@ -47,7 +34,7 @@ Output: Prime`,
     shuffled_order: ['bool prime = true;', 'int main(){', 'for(int i=2;i*i<=n;i++){', '#include<iostream>', 'using namespace std;', 'if(n<2)', 'prime=false;', 'if(n%i==0)', 'prime=false;', 'int n;', 'cin>>n;', 'if(prime)', 'cout<<"Prime";', 'else', 'cout<<"Not Prime";', 'return 0;', '}', '}']
   },
   {
-    room_order: 4,
+    room_order: 3,
     title: 'The Array Spinner',
     topic: 'Arrays',
     difficulty: 'hard',
@@ -64,7 +51,7 @@ Output: 5 1 2 3 4`,
   
   // SECTION 2: PATTERN PREDICTION
   {
-    room_order: 5,
+    room_order: 4,
     title: 'The Starry Loop',
     topic: 'Nested Loops',
     difficulty: 'easy',
@@ -90,7 +77,7 @@ Input your predicted output exactly as it appears.`,
     expected_pattern: '2334'
   },
   {
-    room_order: 6,
+    room_order: 5,
     title: 'The Casting Stone',
     topic: 'Array Traversal',
     difficulty: 'medium',
@@ -117,34 +104,7 @@ Input your predicted output exactly as it appears.`,
     expected_pattern: '18'
   },
   {
-    room_order: 7,
-    title: 'The Recursive Binary',
-    topic: 'Recursion',
-    difficulty: 'medium',
-    points: 40,
-    problem_statement: `Predict the exact output pattern of the following code.
-
-\`\`\`cpp
-#include <iostream>
-using namespace std;
-void mystery(int n) {
-    if(n <= 0) return;
-    mystery(n / 2);
-    cout << n % 2;
-}
-int main() {
-    mystery(25);
-    return 0;
-}
-\`\`\`
-
-Input your predicted output exactly as it appears.`,
-    section: 2,
-    type: 'pattern_manual',
-    expected_pattern: '11001'
-  },
-  {
-    room_order: 8,
+    room_order: 6,
     title: 'The String Illusion',
     topic: 'String Manipulation',
     difficulty: 'hard',
@@ -173,7 +133,31 @@ Input your predicted output exactly as it appears.`,
 
   // SECTION 3: FULL CODING
   {
-    room_order: 9,
+    room_order: 7,
+    title: 'The Missing Artifact',
+    topic: 'Arrays & Math',
+    difficulty: 'medium',
+    points: 50,
+    problem_statement: `You are given an array of size N-1 that contains distinct integers in the range of 1 to N. Find the missing number.
+
+**Print**
+The missing integer.
+
+**Input**
+First line contains N.
+Second line contains N-1 space separated integers.
+
+**Example**
+Input: 
+\`5\`
+\`1 2 4 5\`
+Output: 
+\`3\``,
+    section: 3,
+    type: 'coding_manual'
+  },
+  {
+    room_order: 8,
     title: 'The Cipher Gate',
     topic: 'Strings & Parsing',
     difficulty: 'hard',
@@ -193,7 +177,7 @@ Output: \`OPEN\``,
     type: 'coding_manual'
   },
   {
-    room_order: 10,
+    room_order: 9,
     title: 'The Balanced Scales',
     topic: 'Stacks & Logic',
     difficulty: 'boss',
