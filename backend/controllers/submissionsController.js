@@ -160,7 +160,17 @@ const createSubmission = async (req, res, next) => {
       `)
       .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      // If the team was deleted but the user still has a valid JWT, 
+      // Supabase will throw a foreign key violation on team_id.
+      if (insertError.code === '23503' && insertError.message.includes('team_id')) {
+        return res.status(401).json({
+          success: false,
+          message: 'Your team account is invalid or was removed. Please click Logout and register again.'
+        });
+      }
+      throw insertError;
+    }
 
     // 3. Socket Communications & Side Effects
     const io = getIO();

@@ -47,3 +47,12 @@ Desktop.ini
 coverage/
 .cache/
 .temp/
+
+# ─── DB & Seeding Scripts ───────────────────────────────────────────────────
+backend/add_*_questions.js
+backend/check_db.js
+backend/dump_*.js
+backend/migrate_*.js
+backend/run_migrations.js
+backend/update_*.js
+backend/test_*.js
