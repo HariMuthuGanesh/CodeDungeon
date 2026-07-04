@@ -6,7 +6,7 @@ node_modules/
 # ─── Environment / Secrets ────────────────────────────────────────────────────
 .env
 .env.*
-!.env.example          # Allow a safe example template to be committed
+!.env.example
 
 # ─── Build Output ─────────────────────────────────────────────────────────────
 dist/
@@ -40,8 +40,8 @@ Desktop.ini
 
 # ─── Markdown Notes (internal docs, not for repo) ─────────────────────────────
 *.md
-!README.md             # Keep the project README
-
+!README.md
+!.github/SECURITY.md
 # ─── Misc ─────────────────────────────────────────────────────────────────────
 *.lock
 coverage/

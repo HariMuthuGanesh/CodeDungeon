@@ -5,6 +5,8 @@ const cors = require('cors');
 const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const { setIO } = require('./config/socket');
@@ -27,11 +29,16 @@ const app    = express();
 const server = http.createServer(app);
 const CORS_ORIGIN = process.env.CLIENT_ORIGIN || '*';
 
-// Allow any localhost port in dev (handles Vite auto-incrementing ports)
+// Only allow specified origin, or fallback to restrictive if none provided
 const corsOptions = {
   origin: (origin, callback) => {
-    // Unconditionally allow all origins for the competition
-    callback(null, true);
+    if (CORS_ORIGIN === '*') {
+      return callback(null, true);
+    }
+    if (!origin || origin === CORS_ORIGIN) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 };
@@ -44,6 +51,19 @@ const io = new Server(server, {
 setIO(io);
 
 // ─── Global Middleware ────────────────────────────────────────────────────────
+// Use helmet for basic HTTP security headers
+app.use(helmet());
+
+// Apply a global rate limiter: maximum 500 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(globalLimiter);
+
 app.use(cors(corsOptions));
 app.use(express.json());
 

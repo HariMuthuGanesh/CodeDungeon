@@ -50,28 +50,7 @@ const createSubmission = async (req, res, next) => {
       return res.status(409).json({ success: false, message: 'You have already cleared this room.' });
     }
 
-    // Check room is unlocked (room_order > 1 → previous must be accepted)
-    if (room.room_order > 1) {
-      const { data: prevRoom } = await supabase
-        .from('rooms')
-        .select('id')
-        .eq('room_order', room.room_order - 1)
-        .single();
-
-      if (prevRoom) {
-        const { data: prevCleared } = await supabase
-          .from('submissions')
-          .select('id')
-          .eq('team_id', teamId)
-          .eq('room_id', prevRoom.id)
-          .eq('status', 'accepted')
-          .maybeSingle();
-
-        if (!prevCleared) {
-          return res.status(403).json({ success: false, message: 'Previous room must be cleared first.' });
-        }
-      }
-    }
+    // Sequential room locking has been removed. All chambers are open.
 
     // 2. Perform Automatic Evaluations (if applicable)
     let finalStatus = 'pending';

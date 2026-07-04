@@ -2,12 +2,32 @@ const express = require('express');
 const { body } = require('express-validator');
 const { register, login, me } = require('../controllers/authController');
 const auth = require('../middleware/auth');
+const rateLimit = require('express-rate-limit');
 
 const router = express.Router();
+
+// Rate limiter for registration (keyed by IP, but with a generous limit to allow college networks)
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 50, // 50 registrations per IP per hour
+  message: { success: false, message: 'Too many accounts created from this IP, please try again after an hour.' },
+});
+
+// Rate limiter for login keyed by teamName instead of IP
+// This prevents blocking everyone on a shared NAT/college wifi while stopping brute force on specific accounts.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 login attempts per teamName per 15 minutes
+  keyGenerator: (req) => {
+    return req.body.teamName ? req.body.teamName.toLowerCase().trim() : req.ip;
+  },
+  message: { success: false, message: 'Too many login attempts for this team, please try again later.' },
+});
 
 // POST /api/auth/register  — Teams self-register (public)
 router.post(
   '/register',
+  registerLimiter,
   [
     body('teamName').trim().notEmpty().withMessage('Team name is required.'),
     body('password').isLength({ min: 4 }).withMessage('Password must be at least 4 characters.'),
@@ -18,6 +38,7 @@ router.post(
 // POST /api/auth/login
 router.post(
   '/login',
+  loginLimiter,
   [
     body('teamName').trim().notEmpty().withMessage('Team name is required.'),
     body('password').notEmpty().withMessage('Password is required.'),
