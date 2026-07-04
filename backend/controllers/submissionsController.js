@@ -44,7 +44,7 @@ const createSubmission = async (req, res, next) => {
       .eq('team_id', teamId)
       .eq('room_id', roomId)
       .eq('status', 'accepted')
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return res.status(409).json({ success: false, message: 'You have already cleared this room.' });
@@ -65,7 +65,7 @@ const createSubmission = async (req, res, next) => {
           .eq('team_id', teamId)
           .eq('room_id', prevRoom.id)
           .eq('status', 'accepted')
-          .single();
+          .maybeSingle();
 
         if (!prevCleared) {
           return res.status(403).json({ success: false, message: 'Previous room must be cleared first.' });
@@ -98,7 +98,7 @@ const createSubmission = async (req, res, next) => {
       reviewedAt = new Date().toISOString();
       reviewDuration = 0;
     } else if (room.type === 'pattern_manual') {
-      const normalize = (str) => (str || '').replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').trim();
+      const normalize = (str) => (str || '').replace(/\r\n/g, '\n').replace(/[ \t]+$/gm, '').replace(/^\n+|\n+$/g, '');
       const isCorrect = normalize(notes) === normalize(room.expected_pattern);
       finalStatus = isCorrect ? 'accepted' : 'rejected';
       reviewNotes = isCorrect ? 'Pattern match successful.' : 'the submission was failed';
